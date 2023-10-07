@@ -59,3 +59,24 @@ def compute_shoulders_center(
         axis=0
     )
     return shoulders_center
+
+def generate_pose_recentered_feature(
+    poses,
+    keypoint_coordinates_3d_column_name='keypoint_coordinates_3d',
+    shoulders_center_column_name='shoulders_center'
+):
+    pose_recentered_feature = poses.apply(
+        lambda row: compute_pose_recentered(
+            pose=row[keypoint_coordinates_3d_column_name],
+            shoulders_center=row[shoulders_center_column_name],
+        ),
+        axis=1
+    )
+    return pose_recentered_feature
+
+def compute_pose_recentered(
+    pose,
+    shoulders_center,
+):
+    pose_recentered = pose - np.array([[shoulders_center[0],shoulders_center[1], 0.0]])
+    return pose_recentered
