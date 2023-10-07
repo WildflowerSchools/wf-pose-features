@@ -23,6 +23,8 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.8"
 toml = "^0.10.2"
+pandas = "^2.1"
+numpy = "^1.26"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
