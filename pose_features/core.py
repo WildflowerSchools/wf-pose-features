@@ -1,5 +1,28 @@
 import pandas as pd
 import numpy as np
+import functools
+
+def impute_keypoints(
+    pose_data,
+    pose_track_id_column_name='pose_track_3d_id',
+    timestamp_column_name='timestamp',
+    keypoint_coordinates_3d_column_name='keypoint_coordinates_3d',
+):
+    impute_keypoints_pose_track_partial = functools.partial(
+        impute_keypoints_pose_track,
+        timestamp_column_name=timestamp_column_name,
+        keypoint_coordinates_3d_column_name=keypoint_coordinates_3d_column_name,
+    )
+    pose_data_imputed = (
+        pose_data
+        .groupby(
+            pose_track_id_column_name,
+            as_index=False,
+            group_keys=False,
+        )
+        .apply(impute_keypoints_pose_track_partial)
+    )
+    return pose_data_imputed
 
 def impute_keypoints_pose_track(
     pose_track_data,
