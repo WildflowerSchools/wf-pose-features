@@ -80,3 +80,66 @@ def compute_pose_recentered(
 ):
     pose_recentered = pose - np.array([[shoulders_center[0],shoulders_center[1], 0.0]])
     return pose_recentered
+
+def generate_shoulder_orientation_feature(
+    poses,
+    right_shoulder_index,
+    keypoint_coordinates_3d_recentered_column_name='keypoint_coordinates_3d_recentered',
+):
+    shoulder_orientation_feature = poses[keypoint_coordinates_3d_recentered_column_name].apply(
+        lambda pose: compute_shoulder_orientation(
+            pose=pose,
+            right_shoulder_index=right_shoulder_index,
+        )
+    )
+    return shoulder_orientation_feature
+
+def compute_shoulder_orientation(
+    pose,
+    right_shoulder_index,
+):
+    shoulder_orientation = np.arctan2(
+        pose[right_shoulder_index, 1],
+        pose[right_shoulder_index, 0]
+    )
+    return shoulder_orientation
+
+def generate_pose_reoriented_feature(
+    poses,
+    keypoint_coordinates_3d_recentered_column_name='keypoint_coordinates_3d_recentered',
+    shoulder_orientation_column_name='shoulder_orientation'
+):
+    poses_reoriented_feature = poses.apply(
+        lambda row: compute_pose_reoriented(
+            pose=row[keypoint_coordinates_3d_recentered_column_name],
+            shoulder_orientation=row[shoulder_orientation_column_name],
+        ),
+        axis=1
+    )
+    return poses_reoriented_feature
+
+def compute_pose_reoriented(
+    pose,
+    shoulder_orientation,
+):
+    pose_reoriented = apply_z_rotation(
+        pose,
+        angle=-shoulder_orientation,
+    )
+    return pose_reoriented
+
+def apply_z_rotation(
+    pose,
+    angle,
+):
+    z_rotation_matrix = generate_z_rotation_matrix(angle)
+    rotated_pose = np.matmul(pose, z_rotation_matrix.T)
+    return rotated_pose
+
+def generate_z_rotation_matrix(angle):
+    z_rotation_matrix =  np.array([
+        [np.cos(angle), -np.sin(angle), 0.0],
+        [np.sin(angle), np.cos(angle), 0.0],
+        [0.0, 0.0, 1.0]
+    ])
+    return z_rotation_matrix
