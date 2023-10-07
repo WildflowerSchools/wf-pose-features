@@ -2,52 +2,51 @@ import pandas as pd
 import numpy as np
 
 def impute_keypoints_pose_track(
-    pose_track,
+    pose_track_data,
     timestamp_column_name='timestamp',
     keypoint_coordinates_3d_column_name='keypoint_coordinates_3d',
 ):
-    num_poses = len(pose_track)
-    pose_track_imputed = (
-        pose_track
+    num_poses = len(pose_track_data)
+    pose_track_data_imputed = (
+        pose_track_data
         .copy()
         .sort_values('timestamp')
     )
     keypoint_coordinates_flattened = pd.DataFrame(
-        np.stack(pose_track_imputed[keypoint_coordinates_3d_column_name]).reshape((num_poses, -1)),
-        index=pose_track_imputed[timestamp_column_name]
+        np.stack(pose_track_data_imputed[keypoint_coordinates_3d_column_name]).reshape((num_poses, -1)),
+        index=pose_track_data_imputed[timestamp_column_name]
     )
     keypoint_coordinates_flattened_interpolated = keypoint_coordinates_flattened.interpolate(method='time')
-    pose_track_imputed[keypoint_coordinates_3d_column_name] = list(
+    pose_track_data_imputed[keypoint_coordinates_3d_column_name] = list(
         np.stack(keypoint_coordinates_flattened_interpolated.values)
         .reshape((num_poses, -1, 3))
     )
-    return pose_track_imputed
+    return pose_track_data_imputed
 
 def remove_incomplete_poses(
-    poses,
+    pose_data,
     keypoint_coordinates_3d_column_name='keypoint_coordinates_3d',
 ):
-    poses_cleaned = (
-        poses
-        .loc[poses[keypoint_coordinates_3d_column_name].apply(lambda x: np.all(np.isfinite(x)))]
+    pose_data_cleaned = (
+        pose_data
+        .loc[pose_data[keypoint_coordinates_3d_column_name].apply(lambda x: np.all(np.isfinite(x)))]
         .copy()
     )
-    return poses_cleaned
+    return pose_data_cleaned
 
-def generate_shoulders_center_feature(
+def generate_shoulders_centers_feature(
     poses,
     left_shoulder_index,
     right_shoulder_index,
-    keypoint_coordinates_3d_column_name='keypoint_coordinates_3d',
 ):
-    shoulders_center_feature = poses[keypoint_coordinates_3d_column_name].apply(
-        lambda pose: compute_shoulders_center(
+    shoulders_centers_feature = list()
+    for pose in poses:
+        shoulders_centers_feature.append(compute_shoulders_center(
             pose=pose,
             left_shoulder_index=left_shoulder_index,
             right_shoulder_index=right_shoulder_index,
-        )
-    )
-    return shoulders_center_feature
+        ))
+    return shoulders_centers_feature
 
 def compute_shoulders_center(
     pose,
@@ -60,19 +59,19 @@ def compute_shoulders_center(
     )
     return shoulders_center
 
-def generate_pose_recentered_feature(
+def generate_poses_recentered_feature(
     poses,
-    keypoint_coordinates_3d_column_name='keypoint_coordinates_3d',
-    shoulders_center_column_name='shoulders_center'
+    shoulders_centers,
 ):
-    pose_recentered_feature = poses.apply(
-        lambda row: compute_pose_recentered(
-            pose=row[keypoint_coordinates_3d_column_name],
-            shoulders_center=row[shoulders_center_column_name],
-        ),
-        axis=1
-    )
-    return pose_recentered_feature
+    if len(shoulders_centers) != len(poses):
+        raise ValueError(f"Pose object has length {len(poses)} poses but shoulders centers object has length {len(shoulders_center)}")
+    poses_recentered_feature = list()
+    for pose, shoulders_center in zip(poses, shoulders_centers):
+        poses_recentered_feature.append(compute_pose_recentered(
+            pose=pose,
+            shoulders_center=shoulders_center,
+        ))
+    return poses_recentered_feature
 
 def compute_pose_recentered(
     pose,
@@ -81,18 +80,17 @@ def compute_pose_recentered(
     pose_recentered = pose - np.array([[shoulders_center[0],shoulders_center[1], 0.0]])
     return pose_recentered
 
-def generate_shoulder_orientation_feature(
+def generate_shoulder_orientations_feature(
     poses,
     right_shoulder_index,
-    keypoint_coordinates_3d_recentered_column_name='keypoint_coordinates_3d_recentered',
 ):
-    shoulder_orientation_feature = poses[keypoint_coordinates_3d_recentered_column_name].apply(
-        lambda pose: compute_shoulder_orientation(
+    shoulder_orientations_feature = list()
+    for pose in poses:
+        shoulder_orientations_feature.append(compute_shoulder_orientation(
             pose=pose,
             right_shoulder_index=right_shoulder_index,
-        )
-    )
-    return shoulder_orientation_feature
+        ))
+    return shoulder_orientations_feature
 
 def compute_shoulder_orientation(
     pose,
@@ -104,18 +102,18 @@ def compute_shoulder_orientation(
     )
     return shoulder_orientation
 
-def generate_pose_reoriented_feature(
+def generate_poses_reoriented_feature(
     poses,
-    keypoint_coordinates_3d_recentered_column_name='keypoint_coordinates_3d_recentered',
-    shoulder_orientation_column_name='shoulder_orientation'
+    shoulder_orientations,
 ):
-    poses_reoriented_feature = poses.apply(
-        lambda row: compute_pose_reoriented(
-            pose=row[keypoint_coordinates_3d_recentered_column_name],
-            shoulder_orientation=row[shoulder_orientation_column_name],
-        ),
-        axis=1
-    )
+    if len(shoulder_orientations) != len(poses):
+        raise ValueError(f"Pose object has length {len(poses)} poses but shoulders orientations object has length {len(shoulder_orientations)}")
+    poses_reoriented_feature = list()
+    for pose, shoulder_orientation in zip (poses, shoulder_orientations):
+        poses_reoriented_feature.append(compute_pose_reoriented(
+            pose=pose,
+            shoulder_orientation=shoulder_orientation,
+        ))
     return poses_reoriented_feature
 
 def compute_pose_reoriented(
