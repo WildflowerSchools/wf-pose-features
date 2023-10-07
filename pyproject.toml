@@ -1,18 +1,18 @@
 [project]
-name = "wf-project-name"
+name = "wf-pose-features"
 dynamic = ["version"]
 
 [tool.poetry]
-name = "wf-project-name"
+name = "wf-pose-features"
 version = "0.1.0"
-description = ""
-authors = ["NAME <EMAIL>"]
-maintainers = ["NAME <EMAIL>"]
+description = "Tools for generating model features from pose data"
+authors = ["Theodore Quinn <ted.quinn@wildflowerschools.org>"]
+maintainers = ["Theodore Quinn <ted.quinn@wildflowerschools.org>"]
 readme = "README.md"
 keywords = []
-repository = "<<GITHUB URL>>"
+repository = "https://github.com/WildflowerSchools/wf-pose-features"
 license = "MIT"
-packages = [{include = "MODULE_NAME"}]
+packages = [{include = "pose_features"}]
 classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",

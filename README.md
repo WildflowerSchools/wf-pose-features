@@ -1,10 +1,10 @@
-# MODULE_NAME
+# pose_features
 
-SHORT_DESCRIPTION
+Tools for generating model features from pose data
 
 ## Installation
 
-`pip install PYPI_PACKAGE_NAME`
+`pip install wf-pose-features`
 
 ## Development
 

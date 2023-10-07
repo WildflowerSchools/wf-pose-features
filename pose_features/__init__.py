@@ -5,7 +5,7 @@ import toml
 
 from .core import *
 
-PROJECT_NAME = 'wf-project-name' # Keep this synced with project name in pyproject.toml
+PROJECT_NAME = 'wf-pose-features' # Keep this synced with project name in pyproject.toml
 
 def get_version() -> str:
     try:
