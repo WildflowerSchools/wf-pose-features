@@ -164,3 +164,228 @@ def generate_z_rotation_matrix(angle):
         [0.0, 0.0, 1.0]
     ])
     return z_rotation_matrix
+
+def generate_neck_head_vector_feature(
+    poses,
+    neck_index,
+    head_index,
+):
+    neck_head_vector_feature = list()
+    for pose in poses:
+        neck_head_vector_feature.append(compute_neck_head_vector(
+            pose=pose,
+            neck_index=neck_index,
+            head_index=head_index,
+        ))
+    return neck_head_vector_feature
+
+def compute_neck_head_vector(
+    pose,
+    neck_index,
+    head_index,
+):
+    neck_head_vector = normalize_vector(np.subtract(
+        pose[head_index],
+        pose[neck_index],
+    ))
+    return neck_head_vector
+
+def generate_ears_nose_vector_feature(
+    poses,
+    left_ear_index,
+    right_ear_index,
+    nose_index,
+):
+    ears_nose_vector_feature = list()
+    for pose in poses:
+        ears_nose_vector_feature.append(compute_ears_nose_vector(
+            pose=pose,
+            left_ear_index=left_ear_index,
+            right_ear_index=right_ear_index,
+            nose_index=nose_index,
+        ))
+    return ears_nose_vector_feature
+
+def compute_ears_nose_vector(
+    pose,
+    left_ear_index,
+    right_ear_index,
+    nose_index,
+):
+    ears_nose_vector = normalize_vector(np.subtract(
+        pose[nose_index],
+        np.mean(
+            pose[[left_ear_index, right_ear_index], :],
+            axis=0
+        ),
+    ))
+    return ears_nose_vector
+
+def generate_ears_eyes_vector_feature(
+    poses,
+    left_ear_index,
+    right_ear_index,
+    left_eye_index,
+    right_eye_index,
+):
+    ears_eyes_vector_feature = list()
+    for pose in poses:
+        ears_eyes_vector_feature.append(compute_ears_eyes_vector(
+            pose=pose,
+            left_ear_index=left_ear_index,
+            right_ear_index=right_ear_index,
+            left_eye_index=left_eye_index,
+            right_eye_index=right_eye_index,
+        ))
+    return ears_eyes_vector_feature
+
+def compute_ears_eyes_vector(
+    pose,
+    left_ear_index,
+    right_ear_index,
+    left_eye_index,
+    right_eye_index,
+):
+    ears_eyes_vector = normalize_vector(np.subtract(
+        np.mean(
+            pose[[left_eye_index, right_eye_index], :],
+            axis=0
+        ),
+        np.mean(
+            pose[[left_ear_index, right_ear_index], :],
+            axis=0
+        ),
+    ))
+    return ears_eyes_vector
+
+def generate_ears_left_wrist_vector_feature(
+    poses,
+    left_ear_index,
+    right_ear_index,
+    left_wrist_index,
+):
+    ears_left_wrist_vector_feature = list()
+    for pose in poses:
+        ears_left_wrist_vector_feature.append(compute_ears_left_wrist_vector(
+            pose=pose,
+            left_ear_index=left_ear_index,
+            right_ear_index=right_ear_index,
+            left_wrist_index=left_wrist_index,
+        ))
+    return ears_left_wrist_vector_feature
+
+def compute_ears_left_wrist_vector(
+    pose,
+    left_ear_index,
+    right_ear_index,
+    left_wrist_index,
+):
+    ears_left_wrist_vector = normalize_vector(np.subtract(
+        pose[left_wrist_index],
+        np.mean(
+            pose[[left_ear_index, right_ear_index], :],
+            axis=0
+        ),
+    ))
+    return ears_left_wrist_vector
+
+def generate_ears_right_wrist_vector_feature(
+    poses,
+    left_ear_index,
+    right_ear_index,
+    right_wrist_index,
+):
+    ears_right_wrist_vector_feature = list()
+    for pose in poses:
+        ears_right_wrist_vector_feature.append(compute_ears_right_wrist_vector(
+            pose=pose,
+            left_ear_index=left_ear_index,
+            right_ear_index=right_ear_index,
+            right_wrist_index=right_wrist_index,
+        ))
+    return ears_right_wrist_vector_feature
+
+def compute_ears_right_wrist_vector(
+    pose,
+    left_ear_index,
+    right_ear_index,
+    right_wrist_index,
+):
+    ears_right_wrist_vector = normalize_vector(np.subtract(
+        pose[right_wrist_index],
+        np.mean(
+            pose[[left_ear_index, right_ear_index], :],
+            axis=0
+        ),
+    ))
+    return ears_right_wrist_vector
+
+def generate_shoulders_left_wrist_vector_feature(
+    poses,
+    left_shoulder_index,
+    right_shoulder_index,
+    left_wrist_index,
+):
+    shoulders_left_wrist_vector_feature = list()
+    for pose in poses:
+        shoulders_left_wrist_vector_feature.append(compute_shoulders_left_wrist_vector(
+            pose=pose,
+            left_shoulder_index=left_shoulder_index,
+            right_shoulder_index=right_shoulder_index,
+            left_wrist_index=left_wrist_index,
+        ))
+    return shoulders_left_wrist_vector_feature
+
+def compute_shoulders_left_wrist_vector(
+    pose,
+    left_shoulder_index,
+    right_shoulder_index,
+    left_wrist_index,
+):
+    shoulders_left_wrist_vector = normalize_vector(np.subtract(
+        pose[left_wrist_index],
+        np.mean(
+            pose[[left_shoulder_index, right_shoulder_index], :],
+            axis=0
+        ),
+    ))
+    return shoulders_left_wrist_vector
+
+def generate_shoulders_right_wrist_vector_feature(
+    poses,
+    left_shoulder_index,
+    right_shoulder_index,
+    right_wrist_index,
+):
+    shoulders_right_wrist_vector_feature = list()
+    for pose in poses:
+        shoulders_right_wrist_vector_feature.append(compute_shoulders_right_wrist_vector(
+            pose=pose,
+            left_shoulder_index=left_shoulder_index,
+            right_shoulder_index=right_shoulder_index,
+            right_wrist_index=right_wrist_index,
+        ))
+    return shoulders_right_wrist_vector_feature
+
+def compute_shoulders_right_wrist_vector(
+    pose,
+    left_shoulder_index,
+    right_shoulder_index,
+    right_wrist_index,
+):
+    shoulders_right_wrist_vector = normalize_vector(np.subtract(
+        pose[right_wrist_index],
+        np.mean(
+            pose[[left_shoulder_index, right_shoulder_index], :],
+            axis=0
+        ),
+    ))
+    return shoulders_right_wrist_vector
+
+
+def normalize_vector(vector):
+    normalized_vector = np.divide(
+        vector,
+        np.linalg.norm(vector)
+    )
+    return normalized_vector
