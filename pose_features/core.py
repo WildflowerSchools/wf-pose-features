@@ -165,227 +165,55 @@ def generate_z_rotation_matrix(angle):
     ])
     return z_rotation_matrix
 
-def generate_neck_head_vector_feature(
-    poses,
+def generate_unit_vector_feature(
+    pose_list,
+    selected_keypoint_descriptions_from,
+    selected_keypoint_descriptions_to,
     keypoint_descriptions,
 ):
-    neck_head_vectors = compute_neck_head_vectors(
-        poses=np.stack(poses),
+    poses = np.stack(pose_list)
+    unit_vectors = compute_unit_vectors(
+        poses=poses,
+        selected_keypoint_descriptions_from=selected_keypoint_descriptions_from,
+        selected_keypoint_descriptions_to=selected_keypoint_descriptions_to,
         keypoint_descriptions=keypoint_descriptions,
     )
-    neck_head_vector_feature = list(neck_head_vectors)
-    return neck_head_vector_feature
-
-def compute_neck_head_vectors(
-    poses,
-    keypoint_descriptions,
-):
-    neck_head_vectors = compute_unit_vectors(
-        keypoints_from=extract_keypoints(
-            poses=poses,
-            keypoint_description='Neck',
-            keypoint_descriptions=keypoint_descriptions,
-        ),
-        keypoints_to=extract_keypoints(
-            poses=poses,
-            keypoint_description='Head',
-            keypoint_descriptions=keypoint_descriptions,
-        ),
-    )
-    return neck_head_vectors
-
-def generate_ears_nose_vector_feature(
-    poses,
-    keypoint_descriptions,
-):
-    ears_nose_vectors = compute_ears_nose_vectors(
-        poses=np.stack(poses),
-        keypoint_descriptions=keypoint_descriptions,
-    )
-    ears_nose_vector_feature = list(ears_nose_vectors)
-    return ears_nose_vector_feature
-
-def compute_ears_nose_vectors(
-    poses,
-    keypoint_descriptions,
-):
-    ears_nose_vectors = compute_unit_vectors(
-        keypoints_from=compute_midpoints(
-            poses=poses,
-            keypoint_description_a='Left ear',
-            keypoint_description_b='Right ear',
-            keypoint_descriptions=keypoint_descriptions,
-        ),
-        keypoints_to=extract_keypoints(
-            poses=poses,
-            keypoint_description='Nose',
-            keypoint_descriptions=keypoint_descriptions,
-        ),
-    )
-    return ears_nose_vectors
-
-def generate_ears_eyes_vector_feature(
-    poses,
-    keypoint_descriptions,
-):
-    ears_eyes_vectors = compute_ears_eyes_vectors(
-        poses=np.stack(poses),
-        keypoint_descriptions=keypoint_descriptions,
-    )
-    ears_eyes_vector_feature = list(ears_eyes_vectors)
-    return ears_eyes_vector_feature
-
-def compute_ears_eyes_vectors(
-    poses,
-    keypoint_descriptions,
-):
-    ears_eyes_vectors = compute_unit_vectors(
-        keypoints_from=compute_midpoints(
-            poses=poses,
-            keypoint_description_a='Left ear',
-            keypoint_description_b='Right ear',
-            keypoint_descriptions=keypoint_descriptions,
-        ),
-        keypoints_to=compute_midpoints(
-            poses=poses,
-            keypoint_description_a='Left eye',
-            keypoint_description_b='Right eye',
-            keypoint_descriptions=keypoint_descriptions,
-        ),
-    )
-    return ears_eyes_vectors
-
-def generate_ears_left_wrist_vector_feature(
-    poses,
-    keypoint_descriptions,
-):
-    ears_left_wrist_vectors = compute_ears_left_wrist_vectors(
-        poses=np.stack(poses),
-        keypoint_descriptions=keypoint_descriptions,
-    )
-    ears_left_wrist_vector_feature = list(ears_left_wrist_vectors)
-    return ears_left_wrist_vector_feature
-
-def compute_ears_left_wrist_vectors(
-    poses,
-    keypoint_descriptions,
-):
-    ears_left_wrist_vectors = compute_unit_vectors(
-        keypoints_from=compute_midpoints(
-            poses=poses,
-            keypoint_description_a='Left ear',
-            keypoint_description_b='Right ear',
-            keypoint_descriptions=keypoint_descriptions,
-        ),
-        keypoints_to=extract_keypoints(
-            poses=poses,
-            keypoint_description='Left wrist',
-            keypoint_descriptions=keypoint_descriptions,
-        ),
-    )
-    return ears_left_wrist_vectors
-
-def generate_ears_right_wrist_vector_feature(
-    poses,
-    keypoint_descriptions,
-):
-    ears_right_wrist_vectors = compute_ears_right_wrist_vectors(
-        poses=np.stack(poses),
-        keypoint_descriptions=keypoint_descriptions,
-    )
-    ears_right_wrist_vector_feature = list(ears_right_wrist_vectors)
-    return ears_right_wrist_vector_feature
-
-def compute_ears_right_wrist_vectors(
-    poses,
-    keypoint_descriptions,
-):
-    ears_right_wrist_vectors = compute_unit_vectors(
-        keypoints_from=compute_midpoints(
-            poses=poses,
-            keypoint_description_a='Left ear',
-            keypoint_description_b='Right ear',
-            keypoint_descriptions=keypoint_descriptions,
-        ),
-        keypoints_to=extract_keypoints(
-            poses=poses,
-            keypoint_description='Right wrist',
-            keypoint_descriptions=keypoint_descriptions,
-        ),
-    )
-    return ears_right_wrist_vectors
-
-def generate_shoulders_left_wrist_vector_feature(
-    poses,
-    keypoint_descriptions,
-):
-    shoulders_left_wrist_vectors = compute_shoulders_left_wrist_vectors(
-        poses=np.stack(poses),
-        keypoint_descriptions=keypoint_descriptions,
-    )
-    shoulders_left_wrist_vector_feature = list(shoulders_left_wrist_vectors)
-    return shoulders_left_wrist_vector_feature
-
-def compute_shoulders_left_wrist_vectors(
-    poses,
-    keypoint_descriptions,
-):
-    shoulders_left_wrist_vectors = compute_unit_vectors(
-        keypoints_from=compute_midpoints(
-            poses=poses,
-            keypoint_description_a='Left shoulder',
-            keypoint_description_b='Right shoulder',
-            keypoint_descriptions=keypoint_descriptions,
-        ),
-        keypoints_to=extract_keypoints(
-            poses=poses,
-            keypoint_description='Left wrist',
-            keypoint_descriptions=keypoint_descriptions,
-        ),
-    )
-    return shoulders_left_wrist_vectors
-
-def generate_shoulders_right_wrist_vector_feature(
-    poses,
-    keypoint_descriptions,
-):
-    shoulders_right_wrist_vectors = compute_shoulders_right_wrist_vectors(
-        poses=np.stack(poses),
-        keypoint_descriptions=keypoint_descriptions,
-    )
-    shoulders_right_wrist_vector_feature = list(shoulders_right_wrist_vectors)
-    return shoulders_right_wrist_vector_feature
-
-def compute_shoulders_right_wrist_vectors(
-    poses,
-    keypoint_descriptions,
-):
-    shoulders_right_wrist_vectors = compute_unit_vectors(
-        keypoints_from=compute_midpoints(
-            poses=poses,
-            keypoint_description_a='Left shoulder',
-            keypoint_description_b='Right shoulder',
-            keypoint_descriptions=keypoint_descriptions,
-        ),
-        keypoints_to=extract_keypoints(
-            poses=poses,
-            keypoint_description='Right wrist',
-            keypoint_descriptions=keypoint_descriptions,
-        ),
-    )
-    return shoulders_right_wrist_vectors
+    unit_vector_list = list(unit_vectors)
+    return unit_vector_list
 
 def compute_unit_vectors(
+    poses,
+    selected_keypoint_descriptions_from,
+    selected_keypoint_descriptions_to,
+    keypoint_descriptions,
+):
+    keypoints_from = compute_keypoints(
+        poses=poses,
+        selected_keypoint_descriptions=selected_keypoint_descriptions_from,
+        keypoint_descriptions=keypoint_descriptions,
+    )
+    keypoints_to = compute_keypoints(
+        poses=poses,
+        selected_keypoint_descriptions=selected_keypoint_descriptions_to,
+        keypoint_descriptions=keypoint_descriptions,
+    )
+    unit_vectors = compute_unit_vectors_from_keypoints(
+        keypoints_from=keypoints_from,
+        keypoints_to=keypoints_to,
+    )
+    return unit_vectors
+
+def compute_unit_vectors_from_keypoints(
     keypoints_from,
     keypoints_to,
 ):
-    unit_vectors = normalize_vectors(compute_vectors(
+    unit_vectors = normalize_vectors(compute_vectors_from_keypoints(
         keypoints_from,
         keypoints_to,
     ))
     return unit_vectors
 
-def compute_vectors(
+def compute_vectors_from_keypoints(
     keypoints_from,
     keypoints_to,
 ):
@@ -401,6 +229,28 @@ def normalize_vectors(vectors):
         np.linalg.norm(vectors, axis=1, keepdims=True)
     )
     return normalized_vector
+
+def compute_keypoints(
+    poses,
+    selected_keypoint_descriptions,
+    keypoint_descriptions,
+):
+    if len(selected_keypoint_descriptions) == 1:
+        keypoints = extract_keypoints(
+            poses=poses,
+            keypoint_description=selected_keypoint_descriptions[0],
+            keypoint_descriptions=keypoint_descriptions
+        )
+    elif len(selected_keypoint_descriptions) == 2:
+        keypoints = compute_midpoints(
+            poses=poses,
+            keypoint_description_a=selected_keypoint_descriptions[0],
+            keypoint_description_b=selected_keypoint_descriptions[1],
+            keypoint_descriptions=keypoint_descriptions,
+        )
+    else:
+        raise ValueError('Selected keypoint descriptions must be of length 1 (extract keypoints) or 2 (compute midpoints)')
+    return keypoints
 
 def compute_midpoints(
     poses,
