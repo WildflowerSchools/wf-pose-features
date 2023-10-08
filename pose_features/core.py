@@ -167,225 +167,270 @@ def generate_z_rotation_matrix(angle):
 
 def generate_neck_head_vector_feature(
     poses,
-    neck_index,
-    head_index,
+    keypoint_descriptions,
 ):
-    neck_head_vector_feature = list()
-    for pose in poses:
-        neck_head_vector_feature.append(compute_neck_head_vector(
-            pose=pose,
-            neck_index=neck_index,
-            head_index=head_index,
-        ))
+    neck_head_vectors = compute_neck_head_vectors(
+        poses=np.stack(poses),
+        keypoint_descriptions=keypoint_descriptions,
+    )
+    neck_head_vector_feature = list(neck_head_vectors)
     return neck_head_vector_feature
 
-def compute_neck_head_vector(
-    pose,
-    neck_index,
-    head_index,
+def compute_neck_head_vectors(
+    poses,
+    keypoint_descriptions,
 ):
-    neck_head_vector = normalize_vector(np.subtract(
-        pose[head_index],
-        pose[neck_index],
-    ))
-    return neck_head_vector
+    neck_head_vectors = compute_unit_vectors(
+        keypoints_from=extract_keypoints(
+            poses=poses,
+            keypoint_description='Neck',
+            keypoint_descriptions=keypoint_descriptions,
+        ),
+        keypoints_to=extract_keypoints(
+            poses=poses,
+            keypoint_description='Head',
+            keypoint_descriptions=keypoint_descriptions,
+        ),
+    )
+    return neck_head_vectors
 
 def generate_ears_nose_vector_feature(
     poses,
-    left_ear_index,
-    right_ear_index,
-    nose_index,
+    keypoint_descriptions,
 ):
-    ears_nose_vector_feature = list()
-    for pose in poses:
-        ears_nose_vector_feature.append(compute_ears_nose_vector(
-            pose=pose,
-            left_ear_index=left_ear_index,
-            right_ear_index=right_ear_index,
-            nose_index=nose_index,
-        ))
+    ears_nose_vectors = compute_ears_nose_vectors(
+        poses=np.stack(poses),
+        keypoint_descriptions=keypoint_descriptions,
+    )
+    ears_nose_vector_feature = list(ears_nose_vectors)
     return ears_nose_vector_feature
 
-def compute_ears_nose_vector(
-    pose,
-    left_ear_index,
-    right_ear_index,
-    nose_index,
+def compute_ears_nose_vectors(
+    poses,
+    keypoint_descriptions,
 ):
-    ears_nose_vector = normalize_vector(np.subtract(
-        pose[nose_index],
-        np.mean(
-            pose[[left_ear_index, right_ear_index], :],
-            axis=0
+    ears_nose_vectors = compute_unit_vectors(
+        keypoints_from=compute_midpoints(
+            poses=poses,
+            keypoint_description_a='Left ear',
+            keypoint_description_b='Right ear',
+            keypoint_descriptions=keypoint_descriptions,
         ),
-    ))
-    return ears_nose_vector
+        keypoints_to=extract_keypoints(
+            poses=poses,
+            keypoint_description='Nose',
+            keypoint_descriptions=keypoint_descriptions,
+        ),
+    )
+    return ears_nose_vectors
 
 def generate_ears_eyes_vector_feature(
     poses,
-    left_ear_index,
-    right_ear_index,
-    left_eye_index,
-    right_eye_index,
+    keypoint_descriptions,
 ):
-    ears_eyes_vector_feature = list()
-    for pose in poses:
-        ears_eyes_vector_feature.append(compute_ears_eyes_vector(
-            pose=pose,
-            left_ear_index=left_ear_index,
-            right_ear_index=right_ear_index,
-            left_eye_index=left_eye_index,
-            right_eye_index=right_eye_index,
-        ))
+    ears_eyes_vectors = compute_ears_eyes_vectors(
+        poses=np.stack(poses),
+        keypoint_descriptions=keypoint_descriptions,
+    )
+    ears_eyes_vector_feature = list(ears_eyes_vectors)
     return ears_eyes_vector_feature
 
-def compute_ears_eyes_vector(
-    pose,
-    left_ear_index,
-    right_ear_index,
-    left_eye_index,
-    right_eye_index,
+def compute_ears_eyes_vectors(
+    poses,
+    keypoint_descriptions,
 ):
-    ears_eyes_vector = normalize_vector(np.subtract(
-        np.mean(
-            pose[[left_eye_index, right_eye_index], :],
-            axis=0
+    ears_eyes_vectors = compute_unit_vectors(
+        keypoints_from=compute_midpoints(
+            poses=poses,
+            keypoint_description_a='Left ear',
+            keypoint_description_b='Right ear',
+            keypoint_descriptions=keypoint_descriptions,
         ),
-        np.mean(
-            pose[[left_ear_index, right_ear_index], :],
-            axis=0
+        keypoints_to=compute_midpoints(
+            poses=poses,
+            keypoint_description_a='Left eye',
+            keypoint_description_b='Right eye',
+            keypoint_descriptions=keypoint_descriptions,
         ),
-    ))
-    return ears_eyes_vector
+    )
+    return ears_eyes_vectors
 
 def generate_ears_left_wrist_vector_feature(
     poses,
-    left_ear_index,
-    right_ear_index,
-    left_wrist_index,
+    keypoint_descriptions,
 ):
-    ears_left_wrist_vector_feature = list()
-    for pose in poses:
-        ears_left_wrist_vector_feature.append(compute_ears_left_wrist_vector(
-            pose=pose,
-            left_ear_index=left_ear_index,
-            right_ear_index=right_ear_index,
-            left_wrist_index=left_wrist_index,
-        ))
+    ears_left_wrist_vectors = compute_ears_left_wrist_vectors(
+        poses=np.stack(poses),
+        keypoint_descriptions=keypoint_descriptions,
+    )
+    ears_left_wrist_vector_feature = list(ears_left_wrist_vectors)
     return ears_left_wrist_vector_feature
 
-def compute_ears_left_wrist_vector(
-    pose,
-    left_ear_index,
-    right_ear_index,
-    left_wrist_index,
+def compute_ears_left_wrist_vectors(
+    poses,
+    keypoint_descriptions,
 ):
-    ears_left_wrist_vector = normalize_vector(np.subtract(
-        pose[left_wrist_index],
-        np.mean(
-            pose[[left_ear_index, right_ear_index], :],
-            axis=0
+    ears_left_wrist_vectors = compute_unit_vectors(
+        keypoints_from=compute_midpoints(
+            poses=poses,
+            keypoint_description_a='Left ear',
+            keypoint_description_b='Right ear',
+            keypoint_descriptions=keypoint_descriptions,
         ),
-    ))
-    return ears_left_wrist_vector
+        keypoints_to=extract_keypoints(
+            poses=poses,
+            keypoint_description='Left wrist',
+            keypoint_descriptions=keypoint_descriptions,
+        ),
+    )
+    return ears_left_wrist_vectors
 
 def generate_ears_right_wrist_vector_feature(
     poses,
-    left_ear_index,
-    right_ear_index,
-    right_wrist_index,
+    keypoint_descriptions,
 ):
-    ears_right_wrist_vector_feature = list()
-    for pose in poses:
-        ears_right_wrist_vector_feature.append(compute_ears_right_wrist_vector(
-            pose=pose,
-            left_ear_index=left_ear_index,
-            right_ear_index=right_ear_index,
-            right_wrist_index=right_wrist_index,
-        ))
+    ears_right_wrist_vectors = compute_ears_right_wrist_vectors(
+        poses=np.stack(poses),
+        keypoint_descriptions=keypoint_descriptions,
+    )
+    ears_right_wrist_vector_feature = list(ears_right_wrist_vectors)
     return ears_right_wrist_vector_feature
 
-def compute_ears_right_wrist_vector(
-    pose,
-    left_ear_index,
-    right_ear_index,
-    right_wrist_index,
+def compute_ears_right_wrist_vectors(
+    poses,
+    keypoint_descriptions,
 ):
-    ears_right_wrist_vector = normalize_vector(np.subtract(
-        pose[right_wrist_index],
-        np.mean(
-            pose[[left_ear_index, right_ear_index], :],
-            axis=0
+    ears_right_wrist_vectors = compute_unit_vectors(
+        keypoints_from=compute_midpoints(
+            poses=poses,
+            keypoint_description_a='Left ear',
+            keypoint_description_b='Right ear',
+            keypoint_descriptions=keypoint_descriptions,
         ),
-    ))
-    return ears_right_wrist_vector
+        keypoints_to=extract_keypoints(
+            poses=poses,
+            keypoint_description='Right wrist',
+            keypoint_descriptions=keypoint_descriptions,
+        ),
+    )
+    return ears_right_wrist_vectors
 
 def generate_shoulders_left_wrist_vector_feature(
     poses,
-    left_shoulder_index,
-    right_shoulder_index,
-    left_wrist_index,
+    keypoint_descriptions,
 ):
-    shoulders_left_wrist_vector_feature = list()
-    for pose in poses:
-        shoulders_left_wrist_vector_feature.append(compute_shoulders_left_wrist_vector(
-            pose=pose,
-            left_shoulder_index=left_shoulder_index,
-            right_shoulder_index=right_shoulder_index,
-            left_wrist_index=left_wrist_index,
-        ))
+    shoulders_left_wrist_vectors = compute_shoulders_left_wrist_vectors(
+        poses=np.stack(poses),
+        keypoint_descriptions=keypoint_descriptions,
+    )
+    shoulders_left_wrist_vector_feature = list(shoulders_left_wrist_vectors)
     return shoulders_left_wrist_vector_feature
 
-def compute_shoulders_left_wrist_vector(
-    pose,
-    left_shoulder_index,
-    right_shoulder_index,
-    left_wrist_index,
+def compute_shoulders_left_wrist_vectors(
+    poses,
+    keypoint_descriptions,
 ):
-    shoulders_left_wrist_vector = normalize_vector(np.subtract(
-        pose[left_wrist_index],
-        np.mean(
-            pose[[left_shoulder_index, right_shoulder_index], :],
-            axis=0
+    shoulders_left_wrist_vectors = compute_unit_vectors(
+        keypoints_from=compute_midpoints(
+            poses=poses,
+            keypoint_description_a='Left shoulder',
+            keypoint_description_b='Right shoulder',
+            keypoint_descriptions=keypoint_descriptions,
         ),
-    ))
-    return shoulders_left_wrist_vector
+        keypoints_to=extract_keypoints(
+            poses=poses,
+            keypoint_description='Left wrist',
+            keypoint_descriptions=keypoint_descriptions,
+        ),
+    )
+    return shoulders_left_wrist_vectors
 
 def generate_shoulders_right_wrist_vector_feature(
     poses,
-    left_shoulder_index,
-    right_shoulder_index,
-    right_wrist_index,
+    keypoint_descriptions,
 ):
-    shoulders_right_wrist_vector_feature = list()
-    for pose in poses:
-        shoulders_right_wrist_vector_feature.append(compute_shoulders_right_wrist_vector(
-            pose=pose,
-            left_shoulder_index=left_shoulder_index,
-            right_shoulder_index=right_shoulder_index,
-            right_wrist_index=right_wrist_index,
-        ))
+    shoulders_right_wrist_vectors = compute_shoulders_right_wrist_vectors(
+        poses=np.stack(poses),
+        keypoint_descriptions=keypoint_descriptions,
+    )
+    shoulders_right_wrist_vector_feature = list(shoulders_right_wrist_vectors)
     return shoulders_right_wrist_vector_feature
 
-def compute_shoulders_right_wrist_vector(
-    pose,
-    left_shoulder_index,
-    right_shoulder_index,
-    right_wrist_index,
+def compute_shoulders_right_wrist_vectors(
+    poses,
+    keypoint_descriptions,
 ):
-    shoulders_right_wrist_vector = normalize_vector(np.subtract(
-        pose[right_wrist_index],
-        np.mean(
-            pose[[left_shoulder_index, right_shoulder_index], :],
-            axis=0
+    shoulders_right_wrist_vectors = compute_unit_vectors(
+        keypoints_from=compute_midpoints(
+            poses=poses,
+            keypoint_description_a='Left shoulder',
+            keypoint_description_b='Right shoulder',
+            keypoint_descriptions=keypoint_descriptions,
         ),
+        keypoints_to=extract_keypoints(
+            poses=poses,
+            keypoint_description='Right wrist',
+            keypoint_descriptions=keypoint_descriptions,
+        ),
+    )
+    return shoulders_right_wrist_vectors
+
+def compute_unit_vectors(
+    keypoints_from,
+    keypoints_to,
+):
+    unit_vectors = normalize_vectors(compute_vectors(
+        keypoints_from,
+        keypoints_to,
     ))
-    return shoulders_right_wrist_vector
+    return unit_vectors
 
+def compute_vectors(
+    keypoints_from,
+    keypoints_to,
+):
+    vectors = np.subtract(
+        keypoints_to,
+        keypoints_from,
+    )
+    return vectors
 
-def normalize_vector(vector):
+def normalize_vectors(vectors):
     normalized_vector = np.divide(
-        vector,
-        np.linalg.norm(vector)
+        vectors,
+        np.linalg.norm(vectors, axis=1, keepdims=True)
     )
     return normalized_vector
+
+def compute_midpoints(
+    poses,
+    keypoint_description_a,
+    keypoint_description_b,
+    keypoint_descriptions,
+):
+    index_a = find_keypoint_index(keypoint_description_a, keypoint_descriptions)
+    index_b = find_keypoint_index(keypoint_description_b, keypoint_descriptions)
+    midpoints = np.mean(
+        poses[:, [index_a, index_b], :],
+        axis=1
+    )
+    return midpoints
+
+def extract_keypoints(
+    poses,
+    keypoint_description,
+    keypoint_descriptions
+):
+    keypoint_index = find_keypoint_index(
+        keypoint_description,
+        keypoint_descriptions
+    )
+    keypoints = poses[:,  keypoint_index]
+    return keypoints
+
+def find_keypoint_index(
+    keypoint_description,
+    keypoint_descriptions
+):
+    keypoint_index = keypoint_descriptions.index(keypoint_description)
+    return keypoint_index
