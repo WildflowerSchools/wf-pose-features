@@ -97,6 +97,22 @@ def generate_poses_body_frame_feature(
     poses_body_frame_list = list(poses_body_frame)
     return poses_body_frame_list
 
+def generate_vector_angle_feature(
+    pose_list,
+    selected_keypoint_descriptions_from,
+    selected_keypoint_descriptions_to,
+    keypoint_descriptions,
+):
+    poses = np.stack(pose_list)
+    vector_angles = compute_vector_angles(
+        poses=poses,
+        selected_keypoint_descriptions_from=selected_keypoint_descriptions_from,
+        selected_keypoint_descriptions_to=selected_keypoint_descriptions_to,
+        keypoint_descriptions=keypoint_descriptions,
+    )
+    vector_angles_list = list(vector_angles)
+    return vector_angles_list
+
 def generate_unit_vector_feature(
     pose_list,
     selected_keypoint_descriptions_from,
@@ -112,6 +128,26 @@ def generate_unit_vector_feature(
     )
     unit_vector_list = list(unit_vectors)
     return unit_vector_list
+
+def compute_vector_angles(
+    poses,
+    selected_keypoint_descriptions_from,
+    selected_keypoint_descriptions_to,
+    keypoint_descriptions,        
+):
+    unit_vectors = compute_unit_vectors(
+        poses=poses,
+        selected_keypoint_descriptions_from=selected_keypoint_descriptions_from,
+        selected_keypoint_descriptions_to=selected_keypoint_descriptions_to,
+        keypoint_descriptions=keypoint_descriptions,
+    )
+    phis = np.arccos(unit_vectors[:, 2])
+    thetas = np.arctan2(unit_vectors[:, 1], unit_vectors[:, 0])
+    vector_angles = np.stack(
+        (phis, thetas),
+        axis=1
+    )
+    return vector_angles
 
 def compute_unit_vectors(
     poses,
