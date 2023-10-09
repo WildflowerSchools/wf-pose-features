@@ -58,41 +58,44 @@ def remove_incomplete_poses(
     )
     return pose_data_cleaned
 
-def generate_shoulders_xy_feature(
+def generate_pose_center_xy_feature(
     pose_list,
+    selected_keypoint_descriptions,
     keypoint_descriptions,
 ):
-    shoulders_xy = compute_keypoints_xy(
+    pose_centers_xy = compute_keypoints_xy(
         poses=np.stack(pose_list),
-        selected_keypoint_descriptions=['Left shoulder', 'Right shoulder'],
+        selected_keypoint_descriptions=selected_keypoint_descriptions,
         keypoint_descriptions=keypoint_descriptions,    
     )
-    shoulders_xy_list = list(shoulders_xy)
-    return shoulders_xy_list
+    pose_centers_xy_list = list(pose_centers_xy)
+    return pose_centers_xy_list
 
-def generate_pose_orientation_xy_shoulders_feature(
+def generate_pose_orientation_xy_feature(
     pose_list,
+    selected_keypoint_descriptions,
     keypoint_descriptions,
 ):
-    pose_orientations_xy_shoulders = compute_pose_orientations_xy(
+    pose_orientations_xy = compute_pose_orientations_xy(
         poses=np.stack(pose_list),
-        selected_keypoint_descriptions=['Left shoulder', 'Right shoulder'],
+        selected_keypoint_descriptions=selected_keypoint_descriptions,
         keypoint_descriptions=keypoint_descriptions,
     )
-    pose_orientations_xy_shoulders_list = list(pose_orientations_xy_shoulders)
-    return pose_orientations_xy_shoulders_list
+    pose_orientations_xy_list = list(pose_orientations_xy)
+    return pose_orientations_xy_list
 
-def poses_body_frame_shoulders_feature(
+def generate_poses_body_frame_feature(
     pose_list,
+    selected_keypoint_descriptions,
     keypoint_descriptions,
 ):
-    poses_body_frame_shoulders = compute_poses_body_frame(
+    poses_body_frame = compute_poses_body_frame(
         poses=np.stack(pose_list),
-        selected_keypoint_descriptions=['Left shoulder', 'Right shoulder'],
+        selected_keypoint_descriptions=selected_keypoint_descriptions,
         keypoint_descriptions=keypoint_descriptions,        
     )
-    poses_body_frame_shoulders_list = list(poses_body_frame_shoulders)
-    return poses_body_frame_shoulders_list
+    poses_body_frame_list = list(poses_body_frame)
+    return poses_body_frame_list
 
 def generate_unit_vector_feature(
     pose_list,
