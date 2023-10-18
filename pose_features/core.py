@@ -97,14 +97,14 @@ def generate_poses_body_frame_feature(
     poses_body_frame_list = list(poses_body_frame)
     return poses_body_frame_list
 
-def generate_vector_angle_feature(
+def generate_vector_angles_spherical_feature(
     pose_list,
     selected_keypoint_names_from,
     selected_keypoint_names_to,
     keypoint_names,
 ):
     poses = np.stack(pose_list)
-    vector_angles = compute_vector_angles(
+    vector_angles = compute_vector_angles_spherical(
         poses=poses,
         selected_keypoint_names_from=selected_keypoint_names_from,
         selected_keypoint_names_to=selected_keypoint_names_to,
@@ -129,7 +129,7 @@ def generate_unit_vector_feature(
     unit_vector_list = list(unit_vectors)
     return unit_vector_list
 
-def compute_vector_angles(
+def compute_vector_angles_spherical(
     poses,
     selected_keypoint_names_from,
     selected_keypoint_names_to,
