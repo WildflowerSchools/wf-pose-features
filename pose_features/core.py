@@ -113,6 +113,22 @@ def generate_vector_angles_spherical_feature(
     vector_angles_list = list(vector_angles)
     return vector_angles_list
 
+def generate_vector_angles_zy_feature(
+    pose_list,
+    selected_keypoint_names_from,
+    selected_keypoint_names_to,
+    keypoint_names,
+):
+    poses = np.stack(pose_list)
+    vector_angles = compute_vector_angles_zy(
+        poses=poses,
+        selected_keypoint_names_from=selected_keypoint_names_from,
+        selected_keypoint_names_to=selected_keypoint_names_to,
+        keypoint_names=keypoint_names,
+    )
+    vector_angles_list = list(vector_angles)
+    return vector_angles_list
+
 def generate_unit_vector_feature(
     pose_list,
     selected_keypoint_names_from,
@@ -145,6 +161,27 @@ def compute_vector_angles_spherical(
     thetas = np.arctan2(unit_vectors[:, 1], unit_vectors[:, 0])
     vector_angles = np.stack(
         (phis, thetas),
+        axis=1
+    )
+    return vector_angles
+
+def compute_vector_angles_zy(
+    poses,
+    selected_keypoint_names_from,
+    selected_keypoint_names_to,
+    keypoint_names,        
+):
+    unit_vectors = compute_unit_vectors(
+        poses=poses,
+        selected_keypoint_names_from=selected_keypoint_names_from,
+        selected_keypoint_names_to=selected_keypoint_names_to,
+        keypoint_names=keypoint_names,
+    )
+    phis = np.arccos(unit_vectors[:, 2])
+    alphas = np.arccos(unit_vectors[:, 1]/np.linalg.norm(unit_vectors[:, :2], axis=1))
+    betas = np.sign(unit_vectors[:, 0])
+    vector_angles = np.stack(
+        (phis, alphas, betas),
         axis=1
     )
     return vector_angles
