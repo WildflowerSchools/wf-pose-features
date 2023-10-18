@@ -335,7 +335,7 @@ def compute_keypoints(
             keypoint_names=keypoint_names,
         )
     else:
-        raise ValueError('Selected keypoint descriptions must be of length 1 (extract keypoints) or 2 (compute midpoints)')
+        raise ValueError('Selected keypoint names must be of length 1 (extract keypoints) or 2 (compute midpoints)')
     return keypoints
 
 def compute_midpoints(
