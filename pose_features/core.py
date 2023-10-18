@@ -60,86 +60,86 @@ def remove_incomplete_poses(
 
 def generate_pose_center_xy_feature(
     pose_list,
-    selected_keypoint_descriptions,
-    keypoint_descriptions,
+    selected_keypoint_names,
+    keypoint_names,
 ):
     pose_centers_xy = compute_keypoints_xy(
         poses=np.stack(pose_list),
-        selected_keypoint_descriptions=selected_keypoint_descriptions,
-        keypoint_descriptions=keypoint_descriptions,    
+        selected_keypoint_names=selected_keypoint_names,
+        keypoint_names=keypoint_names,    
     )
     pose_centers_xy_list = list(pose_centers_xy)
     return pose_centers_xy_list
 
 def generate_pose_orientation_xy_feature(
     pose_list,
-    selected_keypoint_descriptions,
-    keypoint_descriptions,
+    selected_keypoint_names,
+    keypoint_names,
 ):
     pose_orientations_xy = compute_pose_orientations_xy(
         poses=np.stack(pose_list),
-        selected_keypoint_descriptions=selected_keypoint_descriptions,
-        keypoint_descriptions=keypoint_descriptions,
+        selected_keypoint_names=selected_keypoint_names,
+        keypoint_names=keypoint_names,
     )
     pose_orientations_xy_list = list(pose_orientations_xy)
     return pose_orientations_xy_list
 
 def generate_poses_body_frame_feature(
     pose_list,
-    selected_keypoint_descriptions,
-    keypoint_descriptions,
+    selected_keypoint_names,
+    keypoint_names,
 ):
     poses_body_frame = compute_poses_body_frame(
         poses=np.stack(pose_list),
-        selected_keypoint_descriptions=selected_keypoint_descriptions,
-        keypoint_descriptions=keypoint_descriptions,        
+        selected_keypoint_names=selected_keypoint_names,
+        keypoint_names=keypoint_names,        
     )
     poses_body_frame_list = list(poses_body_frame)
     return poses_body_frame_list
 
 def generate_vector_angle_feature(
     pose_list,
-    selected_keypoint_descriptions_from,
-    selected_keypoint_descriptions_to,
-    keypoint_descriptions,
+    selected_keypoint_names_from,
+    selected_keypoint_names_to,
+    keypoint_names,
 ):
     poses = np.stack(pose_list)
     vector_angles = compute_vector_angles(
         poses=poses,
-        selected_keypoint_descriptions_from=selected_keypoint_descriptions_from,
-        selected_keypoint_descriptions_to=selected_keypoint_descriptions_to,
-        keypoint_descriptions=keypoint_descriptions,
+        selected_keypoint_names_from=selected_keypoint_names_from,
+        selected_keypoint_names_to=selected_keypoint_names_to,
+        keypoint_names=keypoint_names,
     )
     vector_angles_list = list(vector_angles)
     return vector_angles_list
 
 def generate_unit_vector_feature(
     pose_list,
-    selected_keypoint_descriptions_from,
-    selected_keypoint_descriptions_to,
-    keypoint_descriptions,
+    selected_keypoint_names_from,
+    selected_keypoint_names_to,
+    keypoint_names,
 ):
     poses = np.stack(pose_list)
     unit_vectors = compute_unit_vectors(
         poses=poses,
-        selected_keypoint_descriptions_from=selected_keypoint_descriptions_from,
-        selected_keypoint_descriptions_to=selected_keypoint_descriptions_to,
-        keypoint_descriptions=keypoint_descriptions,
+        selected_keypoint_names_from=selected_keypoint_names_from,
+        selected_keypoint_names_to=selected_keypoint_names_to,
+        keypoint_names=keypoint_names,
     )
     unit_vector_list = list(unit_vectors)
     return unit_vector_list
 
 def compute_vector_angles(
     poses,
-    selected_keypoint_descriptions_from,
-    selected_keypoint_descriptions_to,
-    keypoint_descriptions,        
+    selected_keypoint_names_from,
+    selected_keypoint_names_to,
+    keypoint_names,        
 ):
     unit_vectors = compute_unit_vectors(
         poses=poses,
-        selected_keypoint_descriptions_from=selected_keypoint_descriptions_from,
-        selected_keypoint_descriptions_to=selected_keypoint_descriptions_to,
-        keypoint_descriptions=keypoint_descriptions,
+        selected_keypoint_names_from=selected_keypoint_names_from,
+        selected_keypoint_names_to=selected_keypoint_names_to,
+        keypoint_names=keypoint_names,
     )
     phis = np.arccos(unit_vectors[:, 2])
     thetas = np.arctan2(unit_vectors[:, 1], unit_vectors[:, 0])
@@ -151,19 +151,19 @@ def compute_vector_angles(
 
 def compute_unit_vectors(
     poses,
-    selected_keypoint_descriptions_from,
-    selected_keypoint_descriptions_to,
-    keypoint_descriptions,
+    selected_keypoint_names_from,
+    selected_keypoint_names_to,
+    keypoint_names,
 ):
     keypoints_from = compute_keypoints(
         poses=poses,
-        selected_keypoint_descriptions=selected_keypoint_descriptions_from,
-        keypoint_descriptions=keypoint_descriptions,
+        selected_keypoint_names=selected_keypoint_names_from,
+        keypoint_names=keypoint_names,
     )
     keypoints_to = compute_keypoints(
         poses=poses,
-        selected_keypoint_descriptions=selected_keypoint_descriptions_to,
-        keypoint_descriptions=keypoint_descriptions,
+        selected_keypoint_names=selected_keypoint_names_to,
+        keypoint_names=keypoint_names,
     )
     unit_vectors = compute_unit_vectors_from_keypoints(
         keypoints_from=keypoints_from,
@@ -200,20 +200,20 @@ def normalize_vectors(vectors):
 
 def compute_poses_body_frame(
     poses,
-    selected_keypoint_descriptions,
-    keypoint_descriptions,        
+    selected_keypoint_names,
+    keypoint_names,        
 ):
-    if len(selected_keypoint_descriptions) !=2:
+    if len(selected_keypoint_names) !=2:
         raise ValueError('Two keypoints must be specified to compute poses in the body frame')
     keypoints_xy = compute_keypoints_xy(
         poses=poses,
-        selected_keypoint_descriptions=selected_keypoint_descriptions,
-        keypoint_descriptions=keypoint_descriptions,    
+        selected_keypoint_names=selected_keypoint_names,
+        keypoint_names=keypoint_names,    
     )
     pose_orientations_xy = compute_pose_orientations_xy(
         poses=poses,
-        selected_keypoint_descriptions=selected_keypoint_descriptions,
-        keypoint_descriptions=keypoint_descriptions,
+        selected_keypoint_names=selected_keypoint_names,
+        keypoint_names=keypoint_names,
     )
     poses_recentered = np.subtract(
         poses,
@@ -273,20 +273,20 @@ def generate_z_rotation_matrix(angle):
 
 def compute_pose_orientations_xy(
     poses,
-    selected_keypoint_descriptions,
-    keypoint_descriptions,
+    selected_keypoint_names,
+    keypoint_names,
 ):
-    if len(selected_keypoint_descriptions) !=2:
+    if len(selected_keypoint_names) !=2:
         raise ValueError('Two keypoints must be specified to compute X-Y pose orientations')
     midpoints = compute_keypoints(
         poses=poses,
-        selected_keypoint_descriptions=selected_keypoint_descriptions,
-        keypoint_descriptions=keypoint_descriptions,    
+        selected_keypoint_names=selected_keypoint_names,
+        keypoint_names=keypoint_names,    
     )
     reference_keypoints = compute_keypoints(
         poses=poses,
-        selected_keypoint_descriptions=selected_keypoint_descriptions[1:],
-        keypoint_descriptions=keypoint_descriptions,    
+        selected_keypoint_names=selected_keypoint_names[1:],
+        keypoint_names=keypoint_names,    
     )
     offsets = np.subtract(
         reference_keypoints,
@@ -297,13 +297,13 @@ def compute_pose_orientations_xy(
 
 def compute_keypoints_xy(
     poses,
-    selected_keypoint_descriptions,
-    keypoint_descriptions,    
+    selected_keypoint_names,
+    keypoint_names,    
 ):
     keypoints = compute_keypoints(
         poses=poses,
-        selected_keypoint_descriptions=selected_keypoint_descriptions,
-        keypoint_descriptions=keypoint_descriptions,
+        selected_keypoint_names=selected_keypoint_names,
+        keypoint_names=keypoint_names,
     )
     keypoints_xy = extract_keypoints_xy(
         keypoints
@@ -318,21 +318,21 @@ def extract_keypoints_xy(
 
 def compute_keypoints(
     poses,
-    selected_keypoint_descriptions,
-    keypoint_descriptions,
+    selected_keypoint_names,
+    keypoint_names,
 ):
-    if len(selected_keypoint_descriptions) == 1:
+    if len(selected_keypoint_names) == 1:
         keypoints = extract_keypoints(
             poses=poses,
-            keypoint_description=selected_keypoint_descriptions[0],
-            keypoint_descriptions=keypoint_descriptions
+            keypoint_name=selected_keypoint_names[0],
+            keypoint_names=keypoint_names
         )
-    elif len(selected_keypoint_descriptions) == 2:
+    elif len(selected_keypoint_names) == 2:
         keypoints = compute_midpoints(
             poses=poses,
-            keypoint_description_a=selected_keypoint_descriptions[0],
-            keypoint_description_b=selected_keypoint_descriptions[1],
-            keypoint_descriptions=keypoint_descriptions,
+            keypoint_name_a=selected_keypoint_names[0],
+            keypoint_name_b=selected_keypoint_names[1],
+            keypoint_names=keypoint_names,
         )
     else:
         raise ValueError('Selected keypoint descriptions must be of length 1 (extract keypoints) or 2 (compute midpoints)')
@@ -340,12 +340,12 @@ def compute_keypoints(
 
 def compute_midpoints(
     poses,
-    keypoint_description_a,
-    keypoint_description_b,
-    keypoint_descriptions,
+    keypoint_name_a,
+    keypoint_name_b,
+    keypoint_names,
 ):
-    index_a = find_keypoint_index(keypoint_description_a, keypoint_descriptions)
-    index_b = find_keypoint_index(keypoint_description_b, keypoint_descriptions)
+    index_a = find_keypoint_index(keypoint_name_a, keypoint_names)
+    index_b = find_keypoint_index(keypoint_name_b, keypoint_names)
     midpoints = np.mean(
         poses[:, [index_a, index_b], :],
         axis=1
@@ -354,19 +354,19 @@ def compute_midpoints(
 
 def extract_keypoints(
     poses,
-    keypoint_description,
-    keypoint_descriptions
+    keypoint_name,
+    keypoint_names
 ):
     keypoint_index = find_keypoint_index(
-        keypoint_description,
-        keypoint_descriptions
+        keypoint_name,
+        keypoint_names
     )
     keypoints = poses[:,  keypoint_index]
     return keypoints
 
 def find_keypoint_index(
-    keypoint_description,
-    keypoint_descriptions
+    keypoint_name,
+    keypoint_names
 ):
-    keypoint_index = keypoint_descriptions.index(keypoint_description)
+    keypoint_index = keypoint_names.index(keypoint_name)
     return keypoint_index
