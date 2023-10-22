@@ -73,10 +73,43 @@ def generate_pose_center_xy_feature(
 
 def generate_pose_orientation_xy_feature(
     pose_list,
+    pose_track_id_list,
+    selected_keypoint_names,
+    keypoint_names,
+):
+    pose_orientations_xy_list = (
+        pose_list
+        .groupby(pose_track_id_list, group_keys=False)
+        .apply(lambda x: generate_pose_orientation_xy_feature_pose_track(
+            pose_list=x,
+            selected_keypoint_names=selected_keypoint_names,
+            keypoint_names=keypoint_names,
+        ))
+    )
+    return pose_orientations_xy_list
+
+def generate_pose_orientation_xy_feature_pose_track(
+    pose_list,
     selected_keypoint_names,
     keypoint_names,
 ):
     pose_orientations_xy = compute_pose_orientations_xy(
+        poses=np.stack(pose_list),
+        selected_keypoint_names=selected_keypoint_names,
+        keypoint_names=keypoint_names,
+    )
+    pose_orientations_xy_list = pd.Series(
+        list(pose_orientations_xy),
+        index=pose_list.index,
+    )
+    return pose_orientations_xy_list
+
+def generate_pose_orientation_xy_feature_old(
+    pose_list,
+    selected_keypoint_names,
+    keypoint_names,
+):
+    pose_orientations_xy = compute_pose_orientations_xy_old(
         poses=np.stack(pose_list),
         selected_keypoint_names=selected_keypoint_names,
         keypoint_names=keypoint_names,
@@ -99,12 +132,50 @@ def generate_poses_body_frame_feature(
 
 def generate_vector_angles_spherical_feature(
     pose_list,
+    pose_track_id_list,
+    selected_keypoint_names_from,
+    selected_keypoint_names_to,
+    keypoint_names,
+):
+    vector_angles_list = (
+        pose_list
+        .groupby(pose_track_id_list, group_keys=False)
+        .apply(lambda x: generate_vector_angles_spherical_feature_pose_track(
+            pose_list=x,
+            selected_keypoint_names_from=selected_keypoint_names_from,
+            selected_keypoint_names_to=selected_keypoint_names_to,
+            keypoint_names=keypoint_names,
+        ))
+    )
+    return vector_angles_list
+
+def generate_vector_angles_spherical_feature_pose_track(
+    pose_list,
     selected_keypoint_names_from,
     selected_keypoint_names_to,
     keypoint_names,
 ):
     poses = np.stack(pose_list)
     vector_angles = compute_vector_angles_spherical(
+        poses=poses,
+        selected_keypoint_names_from=selected_keypoint_names_from,
+        selected_keypoint_names_to=selected_keypoint_names_to,
+        keypoint_names=keypoint_names,
+    )
+    vector_angles_list = pd.Series(
+        list(vector_angles),
+        index=pose_list.index,
+    )
+    return vector_angles_list
+
+def generate_vector_angles_spherical_feature_old(
+    pose_list,
+    selected_keypoint_names_from,
+    selected_keypoint_names_to,
+    keypoint_names,
+):
+    poses = np.stack(pose_list)
+    vector_angles = compute_vector_angles_spherical_old(
         poses=poses,
         selected_keypoint_names_from=selected_keypoint_names_from,
         selected_keypoint_names_to=selected_keypoint_names_to,
@@ -146,6 +217,26 @@ def generate_unit_vector_feature(
     return unit_vector_list
 
 def compute_vector_angles_spherical(
+    poses,
+    selected_keypoint_names_from,
+    selected_keypoint_names_to,
+    keypoint_names,        
+):
+    unit_vectors = compute_unit_vectors(
+        poses=poses,
+        selected_keypoint_names_from=selected_keypoint_names_from,
+        selected_keypoint_names_to=selected_keypoint_names_to,
+        keypoint_names=keypoint_names,
+    )
+    phis = np.arccos(unit_vectors[:, 2])
+    thetas = remove_angle_discontinuities(np.arctan2(unit_vectors[:, 1], unit_vectors[:, 0]))
+    vector_angles = np.stack(
+        (phis, thetas),
+        axis=1
+    )
+    return vector_angles
+
+def compute_vector_angles_spherical_old(
     poses,
     selected_keypoint_names_from,
     selected_keypoint_names_to,
@@ -329,6 +420,30 @@ def compute_pose_orientations_xy(
         reference_keypoints,
         midpoints,
     )
+    pose_orientations_xy = remove_angle_discontinuities(np.arctan2(offsets[:, 1], offsets[:, 0]))
+    return pose_orientations_xy
+
+def compute_pose_orientations_xy_old(
+    poses,
+    selected_keypoint_names,
+    keypoint_names,
+):
+    if len(selected_keypoint_names) !=2:
+        raise ValueError('Two keypoints must be specified to compute X-Y pose orientations')
+    midpoints = compute_keypoints(
+        poses=poses,
+        selected_keypoint_names=selected_keypoint_names,
+        keypoint_names=keypoint_names,    
+    )
+    reference_keypoints = compute_keypoints(
+        poses=poses,
+        selected_keypoint_names=selected_keypoint_names[1:],
+        keypoint_names=keypoint_names,    
+    )
+    offsets = np.subtract(
+        reference_keypoints,
+        midpoints,
+    )
     pose_orientations_xy = np.arctan2(offsets[:, 1], offsets[:, 0])
     return pose_orientations_xy
 
@@ -407,3 +522,20 @@ def find_keypoint_index(
 ):
     keypoint_index = keypoint_names.index(keypoint_name)
     return keypoint_index
+
+def remove_angle_discontinuities(angles):
+    diff = np.concatenate((
+        np.array([0.0,]),
+        np.diff(angles)
+    ))
+    diff_without_discontinuities = np.where(
+        diff < -np.pi,
+        diff + 2*np.pi,
+        np.where(
+            diff > np.pi,
+            diff - 2*np.pi,
+            diff
+        )
+    )
+    angles_without_discontinuities = angles[0] + np.cumsum(diff_without_discontinuities)
+    return angles_without_discontinuities
