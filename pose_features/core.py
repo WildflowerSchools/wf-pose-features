@@ -354,6 +354,57 @@ def compute_vector_angles_zy(
     )
     return vector_angles
 
+def generate_angle_between_vectors_feature(
+    pose_series,
+    selected_keypoint_names_from_a,
+    selected_keypoint_names_to_a,
+    selected_keypoint_names_from_b,
+    selected_keypoint_names_to_b,
+    keypoint_names,
+):
+    angles = compute_angle_between_vectors(
+        poses=np.stack(pose_series.values),
+        selected_keypoint_names_from_a=selected_keypoint_names_from_a,
+        selected_keypoint_names_to_a=selected_keypoint_names_to_a,
+        selected_keypoint_names_from_b=selected_keypoint_names_from_b,
+        selected_keypoint_names_to_b=selected_keypoint_names_to_b,
+        keypoint_names=keypoint_names,
+    )
+    angles_series = pd.Series(
+        list(angles),
+        index=pose_series.index
+    )
+    return angles_series
+
+def compute_angle_between_vectors(
+    poses,
+    selected_keypoint_names_from_a,
+    selected_keypoint_names_to_a,
+    selected_keypoint_names_from_b,
+    selected_keypoint_names_to_b,
+    keypoint_names,        
+):
+    unit_vectors_a = compute_unit_vectors(
+        poses=poses,
+        selected_keypoint_names_from=selected_keypoint_names_from_a,
+        selected_keypoint_names_to=selected_keypoint_names_to_a,
+        keypoint_names=keypoint_names,
+    )
+    unit_vectors_b = compute_unit_vectors(
+        poses=poses,
+        selected_keypoint_names_from=selected_keypoint_names_from_b,
+        selected_keypoint_names_to=selected_keypoint_names_to_b,
+        keypoint_names=keypoint_names,
+    )
+    angles = np.arccos(np.sum(
+        np.multiply(
+            unit_vectors_a,
+            unit_vectors_b
+        ),
+        axis=1
+    ))
+    return angles
+
 def generate_unit_vector_feature(
     pose_series,
     selected_keypoint_names_from,
