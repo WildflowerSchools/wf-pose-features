@@ -569,6 +569,14 @@ def compute_time_average(
     )
     return objects_averaged
 
+def generate_squared_feature(feature_series):
+    squared_objects = np.square(np.stack(feature_series.values))
+    feature_squared_series = pd.Series(
+        list(squared_objects),
+        index=feature_series.index
+    )
+    return feature_squared_series
+
 def flatten_feature(
     feature_series,
     dimension_names,
