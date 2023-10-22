@@ -59,37 +59,37 @@ def remove_incomplete_poses(
     return pose_data_cleaned
 
 def generate_poses_body_frame_feature(
-    pose_list,
-    pose_track_id_list,
+    pose_series,
+    pose_track_id_series,
     selected_keypoint_names,
     keypoint_names,
 ):
-    poses_body_frame_list = (
-        pose_list
-        .groupby(pose_track_id_list, group_keys=False)
+    poses_body_frame_series = (
+        pose_series
+        .groupby(pose_track_id_series, group_keys=False)
         .apply(lambda x: generate_poses_body_frame_feature_pose_track(
-            pose_list=x,
+            pose_series=x,
             selected_keypoint_names=selected_keypoint_names,
             keypoint_names=keypoint_names,
         ))
     )
-    return poses_body_frame_list
+    return poses_body_frame_series
 
 def generate_poses_body_frame_feature_pose_track(
-    pose_list,
+    pose_series,
     selected_keypoint_names,
     keypoint_names,
 ):
     poses_body_frame = compute_poses_body_frame(
-        poses=np.stack(pose_list),
+        poses=np.stack(pose_series.values),
         selected_keypoint_names=selected_keypoint_names,
         keypoint_names=keypoint_names,        
     )
-    poses_body_frame_list = pd.Series(
+    poses_body_frame_series = pd.Series(
         list(poses_body_frame),
-        index=pose_list.index
+        index=pose_series.index
     )
-    return poses_body_frame_list
+    return poses_body_frame_series
 
 def compute_poses_body_frame(
     poses,
@@ -165,17 +165,20 @@ def generate_z_rotation_matrix(angle):
     return z_rotation_matrix
 
 def generate_pose_center_xy_feature(
-    pose_list,
+    pose_series,
     selected_keypoint_names,
     keypoint_names,
 ):
     pose_centers_xy = compute_keypoints_xy(
-        poses=np.stack(pose_list),
+        poses=np.stack(pose_series.values),
         selected_keypoint_names=selected_keypoint_names,
         keypoint_names=keypoint_names,    
     )
-    pose_centers_xy_list = list(pose_centers_xy)
-    return pose_centers_xy_list
+    pose_centers_xy_series = pd.Series(
+        list(pose_centers_xy),
+        index=pose_series.index
+    )
+    return pose_centers_xy_series
 
 def compute_keypoints_xy(
     poses,
@@ -199,37 +202,37 @@ def extract_keypoints_xy(
     return keypoints_xy
 
 def generate_pose_orientation_xy_feature(
-    pose_list,
-    pose_track_id_list,
+    pose_series,
+    pose_track_id_series,
     selected_keypoint_names,
     keypoint_names,
 ):
-    pose_orientations_xy_list = (
-        pose_list
-        .groupby(pose_track_id_list, group_keys=False)
+    pose_orientations_xy_series = (
+        pose_series
+        .groupby(pose_track_id_series, group_keys=False)
         .apply(lambda x: generate_pose_orientation_xy_feature_pose_track(
-            pose_list=x,
+            pose_series=x,
             selected_keypoint_names=selected_keypoint_names,
             keypoint_names=keypoint_names,
         ))
     )
-    return pose_orientations_xy_list
+    return pose_orientations_xy_series
 
 def generate_pose_orientation_xy_feature_pose_track(
-    pose_list,
+    pose_series,
     selected_keypoint_names,
     keypoint_names,
 ):
     pose_orientations_xy = compute_pose_orientations_xy(
-        poses=np.stack(pose_list),
+        poses=np.stack(pose_series.values),
         selected_keypoint_names=selected_keypoint_names,
         keypoint_names=keypoint_names,
     )
-    pose_orientations_xy_list = pd.Series(
+    pose_orientations_xy_series = pd.Series(
         list(pose_orientations_xy),
-        index=pose_list.index,
+        index=pose_series.index,
     )
-    return pose_orientations_xy_list
+    return pose_orientations_xy_series
 
 def compute_pose_orientations_xy(
     poses,
@@ -256,42 +259,41 @@ def compute_pose_orientations_xy(
     return pose_orientations_xy
 
 def generate_vector_angles_spherical_feature(
-    pose_list,
-    pose_track_id_list,
+    pose_series,
+    pose_track_id_series,
     selected_keypoint_names_from,
     selected_keypoint_names_to,
     keypoint_names,
 ):
-    vector_angles_list = (
-        pose_list
-        .groupby(pose_track_id_list, group_keys=False)
+    vector_angles_series = (
+        pose_series
+        .groupby(pose_track_id_series, group_keys=False)
         .apply(lambda x: generate_vector_angles_spherical_feature_pose_track(
-            pose_list=x,
+            pose_series=x,
             selected_keypoint_names_from=selected_keypoint_names_from,
             selected_keypoint_names_to=selected_keypoint_names_to,
             keypoint_names=keypoint_names,
         ))
     )
-    return vector_angles_list
+    return vector_angles_series
 
 def generate_vector_angles_spherical_feature_pose_track(
-    pose_list,
+    pose_series,
     selected_keypoint_names_from,
     selected_keypoint_names_to,
     keypoint_names,
 ):
-    poses = np.stack(pose_list)
     vector_angles = compute_vector_angles_spherical(
-        poses=poses,
+        poses=np.stack(pose_series.values),
         selected_keypoint_names_from=selected_keypoint_names_from,
         selected_keypoint_names_to=selected_keypoint_names_to,
         keypoint_names=keypoint_names,
     )
-    vector_angles_list = pd.Series(
+    vector_angles_series = pd.Series(
         list(vector_angles),
-        index=pose_list.index,
+        index=pose_series.index,
     )
-    return vector_angles_list
+    return vector_angles_series
 
 def compute_vector_angles_spherical(
     poses,
@@ -314,20 +316,22 @@ def compute_vector_angles_spherical(
     return vector_angles
 
 def generate_vector_angles_zy_feature(
-    pose_list,
+    pose_series,
     selected_keypoint_names_from,
     selected_keypoint_names_to,
     keypoint_names,
 ):
-    poses = np.stack(pose_list)
     vector_angles = compute_vector_angles_zy(
-        poses=poses,
+        poses=np.stack(pose_series.values),
         selected_keypoint_names_from=selected_keypoint_names_from,
         selected_keypoint_names_to=selected_keypoint_names_to,
         keypoint_names=keypoint_names,
     )
-    vector_angles_list = list(vector_angles)
-    return vector_angles_list
+    vector_angles_series = pd.Series(
+        list(vector_angles),
+        index=pose_series.index
+    )
+    return vector_angles_series
 
 def compute_vector_angles_zy(
     poses,
@@ -351,20 +355,22 @@ def compute_vector_angles_zy(
     return vector_angles
 
 def generate_unit_vector_feature(
-    pose_list,
+    pose_series,
     selected_keypoint_names_from,
     selected_keypoint_names_to,
     keypoint_names,
 ):
-    poses = np.stack(pose_list)
     unit_vectors = compute_unit_vectors(
-        poses=poses,
+        poses=np.stack(pose_series.values),
         selected_keypoint_names_from=selected_keypoint_names_from,
         selected_keypoint_names_to=selected_keypoint_names_to,
         keypoint_names=keypoint_names,
     )
-    unit_vector_list = list(unit_vectors)
-    return unit_vector_list
+    unit_vector_series = pd.Series(
+        list(unit_vectors),
+        index=pose_series.index
+    )
+    return unit_vector_series
 
 def compute_unit_vectors(
     poses,
@@ -488,17 +494,20 @@ def remove_angle_discontinuities(angles):
     return angles_without_discontinuities
 
 def generate_poses_body_frame_feature_old(
-    pose_list,
+    pose_series,
     selected_keypoint_names,
     keypoint_names,
 ):
     poses_body_frame = compute_poses_body_frame_old(
-        poses=np.stack(pose_list),
+        poses=np.stack(pose_series.values),
         selected_keypoint_names=selected_keypoint_names,
         keypoint_names=keypoint_names,        
     )
-    poses_body_frame_list = list(poses_body_frame)
-    return poses_body_frame_list
+    poses_body_frame_series = pd.Series(
+        list(poses_body_frame),
+        pose_series.index
+    )
+    return poses_body_frame_series
 
 def compute_poses_body_frame_old(
     poses,
@@ -537,17 +546,20 @@ def compute_poses_body_frame_old(
     return poses_body_frame
 
 def generate_pose_orientation_xy_feature_old(
-    pose_list,
+    pose_series,
     selected_keypoint_names,
     keypoint_names,
 ):
     pose_orientations_xy = compute_pose_orientations_xy_old(
-        poses=np.stack(pose_list),
+        poses=np.stack(pose_series.values),
         selected_keypoint_names=selected_keypoint_names,
         keypoint_names=keypoint_names,
     )
-    pose_orientations_xy_list = list(pose_orientations_xy)
-    return pose_orientations_xy_list
+    pose_orientations_xy_series = pd.Series(
+        list(pose_orientations_xy),
+        index=pose_series.index
+    )
+    return pose_orientations_xy_series
 
 def compute_pose_orientations_xy_old(
     poses,
@@ -574,20 +586,22 @@ def compute_pose_orientations_xy_old(
     return pose_orientations_xy
 
 def generate_vector_angles_spherical_feature_old(
-    pose_list,
+    pose_series,
     selected_keypoint_names_from,
     selected_keypoint_names_to,
     keypoint_names,
 ):
-    poses = np.stack(pose_list)
     vector_angles = compute_vector_angles_spherical_old(
-        poses=poses,
+        poses=np.stack(pose_series.values),
         selected_keypoint_names_from=selected_keypoint_names_from,
         selected_keypoint_names_to=selected_keypoint_names_to,
         keypoint_names=keypoint_names,
     )
-    vector_angles_list = list(vector_angles)
-    return vector_angles_list
+    vector_angles_series = pd.Series(
+        list(vector_angles),
+        index=pose_series.index
+    )
+    return vector_angles_series
 
 def compute_vector_angles_spherical_old(
     poses,
