@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import scipy
+import itertools
 import functools
 
 def impute_keypoints(
@@ -550,7 +551,6 @@ def generate_time_average_feature_pose_track(
     )
     return object_averaged_series
 
-
 def compute_time_average(
     objects,
     timestamps,
@@ -568,6 +568,24 @@ def compute_time_average(
         .reshape(objects.shape)
     )
     return objects_averaged
+
+def flatten_feature(
+    feature_series,
+    dimension_names,
+):
+    feature_name = feature_series.name
+    column_names = list()
+    for dimension_name_tuple in itertools.product(*dimension_names):
+        column_names.append('_'.join([
+            feature_name,
+            '_'.join(dimension_name_tuple)
+        ]))
+    feature_flattened = pd.DataFrame(
+        np.stack(feature_series.values).reshape((len(feature_series), -1)),
+        index=feature_series.index,
+        columns=column_names
+    )
+    return feature_flattened
 
 def compute_keypoints(
     poses,
