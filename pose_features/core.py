@@ -421,6 +421,47 @@ def normalize_vectors(vectors):
     )
     return normalized_vector
 
+def generate_time_derivative_feature(
+    object_series,
+    timestamp_series,
+    pose_track_id_series,
+):
+    time_series = pd.DataFrame({
+        'timestamp': timestamp_series,
+        'object': object_series,
+    })
+    object_derivative_series = (
+        time_series
+        .groupby(pose_track_id_series, group_keys=False)
+        .apply(lambda x: generate_time_derivative_feature_pose_track(
+            object_series=x['object'],
+            timestamp_series=x['timestamp'],
+        ))
+    )
+    return object_derivative_series
+
+def generate_time_derivative_feature_pose_track(
+    object_series,
+    timestamp_series,
+):
+    objects_derivative = compute_time_derivative(
+        objects=np.stack(object_series.values),
+        timestamps=np.stack(timestamp_series.values),
+    )
+    object_derivative_series = pd.Series(
+        list(objects_derivative),
+        index=object_series.index
+    )
+    return object_derivative_series
+
+def compute_time_derivative(
+    objects,
+    timestamps,
+):
+    timestamps_seconds = (timestamps - timestamps[0])/np.timedelta64(1, 's')
+    objects_derivative = np.apply_along_axis(lambda x: np.gradient(x, timestamps_seconds), axis=0, arr=objects)
+    return objects_derivative
+
 def compute_keypoints(
     poses,
     selected_keypoint_names,
