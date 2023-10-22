@@ -462,6 +462,62 @@ def compute_time_derivative(
     objects_derivative = np.apply_along_axis(lambda x: np.gradient(x, timestamps_seconds), axis=0, arr=objects)
     return objects_derivative
 
+def generate_time_average_feature(
+    object_series,
+    timestamp_series,
+    pose_track_id_series,
+    time_window,
+):
+    time_series = pd.DataFrame({
+        'timestamp': timestamp_series,
+        'object': object_series,
+    })
+    object_averaged_series = (
+        time_series
+        .groupby(pose_track_id_series, group_keys=False)
+        .apply(lambda x: generate_time_average_feature_pose_track(
+            object_series=x['object'],
+            timestamp_series=x['timestamp'],
+            time_window=time_window,
+        ))
+    )
+    return object_averaged_series
+
+def generate_time_average_feature_pose_track(
+    object_series,
+    timestamp_series,
+    time_window,
+):
+    objects_averaged = compute_time_average(
+        objects=np.stack(object_series.values),
+        timestamps=np.stack(timestamp_series.values),
+        time_window=time_window,
+    )
+    object_averaged_series = pd.Series(
+        list(objects_averaged),
+        index=object_series.index
+    )
+    return object_averaged_series
+
+
+def compute_time_average(
+    objects,
+    timestamps,
+    time_window,
+):
+    num_objects = objects.shape[0]
+    objects_averaged = (
+        pd.DataFrame(
+            objects.reshape((num_objects, -1)),
+            index=timestamps
+        )
+        .rolling(time_window, center=True)
+        .mean()
+        .values
+        .reshape(objects.shape)
+    )
+    return objects_averaged
+
 def compute_keypoints(
     poses,
     selected_keypoint_names,
