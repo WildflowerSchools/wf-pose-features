@@ -59,6 +59,41 @@ def remove_incomplete_poses(
     )
     return pose_data_cleaned
 
+def generate_pose_pair_data(pose_data):
+    pose_track_ids = pose_data['pose_track_3d_id'].unique().tolist()
+    pose_track_pairs=list()
+    for pose_track_3d_id_a, pose_track_3d_id_b in itertools.combinations(pose_track_ids, 2):
+        pose_track_a = (
+            pose_data
+            .loc[pose_data['pose_track_3d_id'] == pose_track_3d_id_a]
+            .reset_index()
+            .set_index('timestamp')
+        )
+        pose_track_b = (
+            pose_data
+            .loc[pose_data['pose_track_3d_id'] == pose_track_3d_id_b]
+            .reset_index()
+            .set_index('timestamp')
+        )
+        pose_track_pair = (
+            pose_track_a
+            .join(
+                pose_track_b,
+                how='inner',
+                lsuffix='_a',
+                rsuffix='_b'
+            )
+            .reset_index()
+            .set_index([
+                'pose_3d_id_a',
+                'pose_3d_id_b',
+            ])
+        )
+        if len(pose_track_pair) > 0:
+            pose_track_pairs.append(pose_track_pair)
+    pose_pair_data = pd.concat(pose_track_pairs)
+    return pose_pair_data
+
 def generate_poses_body_frame_feature(
     pose_series,
     pose_track_id_series,
@@ -577,6 +612,14 @@ def compute_time_average(
         .reshape(objects.shape)
     )
     return objects_averaged
+
+def generate_magnitude_squared_feature(feature_series):
+    magnitude_squared_objects = np.sum(np.square(np.stack(feature_series.values)), axis=-1)
+    feature_magnitude_squared_series = pd.Series(
+        list(magnitude_squared_objects),
+        index=feature_series.index
+    )
+    return feature_magnitude_squared_series
 
 def generate_squared_feature(feature_series):
     squared_objects = np.square(np.stack(feature_series.values))
