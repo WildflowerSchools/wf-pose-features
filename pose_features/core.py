@@ -321,12 +321,14 @@ def generate_vector_angles_zy_feature(
     selected_keypoint_names_from,
     selected_keypoint_names_to,
     keypoint_names,
+    include_beta=False,
 ):
     vector_angles = compute_vector_angles_zy(
         poses=np.stack(pose_series.values),
         selected_keypoint_names_from=selected_keypoint_names_from,
         selected_keypoint_names_to=selected_keypoint_names_to,
         keypoint_names=keypoint_names,
+        include_beta=include_beta,
     )
     vector_angles_series = pd.Series(
         list(vector_angles),
@@ -338,7 +340,8 @@ def compute_vector_angles_zy(
     poses,
     selected_keypoint_names_from,
     selected_keypoint_names_to,
-    keypoint_names,        
+    keypoint_names,
+    include_beta=False,
 ):
     unit_vectors = compute_unit_vectors(
         poses=poses,
@@ -348,11 +351,17 @@ def compute_vector_angles_zy(
     )
     phis = np.arccos(unit_vectors[:, 2])
     alphas = np.arccos(unit_vectors[:, 1]/np.linalg.norm(unit_vectors[:, :2], axis=1))
-    betas = np.sign(unit_vectors[:, 0])
-    vector_angles = np.stack(
-        (phis, alphas, betas),
-        axis=1
-    )
+    if include_beta:
+        betas = np.sign(unit_vectors[:, 0])
+        vector_angles = np.stack(
+            (phis, alphas, betas),
+            axis=1
+        )
+    else:
+        vector_angles = np.stack(
+            (phis, alphas),
+            axis=1
+        )
     return vector_angles
 
 def generate_angle_between_vectors_feature(
