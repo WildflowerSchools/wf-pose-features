@@ -399,6 +399,34 @@ def compute_vector_angles_zy(
         )
     return vector_angles
 
+def generate_angle_between_vectors_pose_pair_feature(
+    pose_series_from_a,
+    selected_keypoint_names_from_a,
+    pose_series_to_a,
+    selected_keypoint_names_to_a,
+    pose_series_from_b,
+    selected_keypoint_names_from_b,
+    pose_series_to_b,
+    selected_keypoint_names_to_b,
+    keypoint_names,
+):
+    angles = compute_angle_between_vectors_pose_pair(
+        poses_from_a=np.stack(pose_series_from_a.values),
+        selected_keypoint_names_from_a=selected_keypoint_names_from_a,
+        poses_to_a=np.stack(pose_series_to_a.values),
+        selected_keypoint_names_to_a=selected_keypoint_names_to_a,
+        poses_from_b=np.stack(pose_series_from_b.values),
+        selected_keypoint_names_from_b=selected_keypoint_names_from_b,
+        poses_to_b=np.stack(pose_series_to_b.values),
+        selected_keypoint_names_to_b=selected_keypoint_names_to_b,
+        keypoint_names=keypoint_names,
+    )
+    angles_series = pd.Series(
+        list(angles),
+        index=pose_series_from_a.index
+    )
+    return angles_series
+
 def generate_angle_between_vectors_feature(
     pose_series,
     selected_keypoint_names_from_a,
@@ -420,6 +448,40 @@ def generate_angle_between_vectors_feature(
         index=pose_series.index
     )
     return angles_series
+
+def compute_angle_between_vectors_pose_pair(
+    poses_from_a,
+    selected_keypoint_names_from_a,
+    poses_to_a,
+    selected_keypoint_names_to_a,
+    poses_from_b,
+    selected_keypoint_names_from_b,
+    poses_to_b,
+    selected_keypoint_names_to_b,
+    keypoint_names,        
+):
+    unit_vectors_a = compute_unit_vectors_pose_pair(
+        poses_from=poses_from_a,
+        selected_keypoint_names_from=selected_keypoint_names_from_a,
+        poses_to=poses_to_a,
+        selected_keypoint_names_to=selected_keypoint_names_to_a,
+        keypoint_names=keypoint_names,
+    )
+    unit_vectors_b = compute_unit_vectors_pose_pair(
+        poses_from=poses_from_b,
+        selected_keypoint_names_from=selected_keypoint_names_from_b,
+        poses_to=poses_to_b,
+        selected_keypoint_names_to=selected_keypoint_names_to_b,
+        keypoint_names=keypoint_names,
+    )
+    angles = np.arccos(np.sum(
+        np.multiply(
+            unit_vectors_a,
+            unit_vectors_b
+        ),
+        axis=1
+    ))
+    return angles
 
 def compute_angle_between_vectors(
     poses,
@@ -450,6 +512,26 @@ def compute_angle_between_vectors(
     ))
     return angles
 
+def generate_unit_vector_pose_pair_feature(
+    pose_series_from,
+    selected_keypoint_names_from,
+    pose_series_to,
+    selected_keypoint_names_to,
+    keypoint_names,
+):
+    unit_vectors = compute_unit_vectors_pose_pair(
+        poses_from=np.stack(pose_series_from.values),
+        selected_keypoint_names_from=selected_keypoint_names_from,
+        poses_to=np.stack(pose_series_to.values),
+        selected_keypoint_names_to=selected_keypoint_names_to,
+        keypoint_names=keypoint_names,
+    )
+    unit_vector_series = pd.Series(
+        list(unit_vectors),
+        index=pose_series_from.index
+    )
+    return unit_vector_series
+
 def generate_unit_vector_feature(
     pose_series,
     selected_keypoint_names_from,
@@ -467,6 +549,29 @@ def generate_unit_vector_feature(
         index=pose_series.index
     )
     return unit_vector_series
+
+def compute_unit_vectors_pose_pair(
+    poses_from,
+    selected_keypoint_names_from,
+    poses_to,
+    selected_keypoint_names_to,
+    keypoint_names,
+):
+    keypoints_from = compute_keypoints(
+        poses=poses_from,
+        selected_keypoint_names=selected_keypoint_names_from,
+        keypoint_names=keypoint_names,
+    )
+    keypoints_to = compute_keypoints(
+        poses=poses_to,
+        selected_keypoint_names=selected_keypoint_names_to,
+        keypoint_names=keypoint_names,
+    )
+    unit_vectors = compute_unit_vectors_from_keypoints(
+        keypoints_from=keypoints_from,
+        keypoints_to=keypoints_to,
+    )
+    return unit_vectors
 
 def compute_unit_vectors(
     poses,
