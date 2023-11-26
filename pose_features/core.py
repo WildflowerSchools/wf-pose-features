@@ -591,6 +591,52 @@ def compute_angle_between_vectors(
     ))
     return angles
 
+def generate_distance_xy_pose_pair_feature(
+    pose_series_from,
+    selected_keypoint_names_from,
+    pose_series_to,
+    selected_keypoint_names_to,
+    keypoint_names,
+):
+    distances_xy_pose_pair = compute_distances_xy_pose_pair(
+        poses_from=np.stack(pose_series_from.values),
+        selected_keypoint_names_from=selected_keypoint_names_from,
+        poses_to=np.stack(pose_series_to.values),
+        selected_keypoint_names_to=selected_keypoint_names_to,
+        keypoint_names=keypoint_names,
+    )
+    distance_xy_pose_pair_series = pd.Series(
+        list(distances_xy_pose_pair),
+        index=pose_series_from.index
+    )
+    return distance_xy_pose_pair_series
+
+def compute_distances_xy_pose_pair(
+    poses_from,
+    selected_keypoint_names_from,
+    poses_to,
+    selected_keypoint_names_to,
+    keypoint_names,
+):
+    keypoints_from = compute_keypoints(
+        poses=poses_from,
+        selected_keypoint_names=selected_keypoint_names_from,
+        keypoint_names=keypoint_names,
+    )
+    keypoints_to = compute_keypoints(
+        poses=poses_to,
+        selected_keypoint_names=selected_keypoint_names_to,
+        keypoint_names=keypoint_names,
+    )
+    distances_xy = np.linalg.norm(
+        np.subtract(
+            keypoints_to,
+            keypoints_from,
+        )[:, :2],
+        axis=-1
+    )
+    return distances_xy
+
 def generate_unit_vector_pose_pair_feature(
     pose_series_from,
     selected_keypoint_names_from,
