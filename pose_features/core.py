@@ -496,6 +496,58 @@ def compute_vector_angles_spherical(
     )
     return vector_angles
 
+def generate_vector_angles_zy_pose_pair_feature(
+    pose_series_from,
+    selected_keypoint_names_from,
+    pose_series_to,
+    selected_keypoint_names_to,
+    keypoint_names,
+    include_beta=False,
+):
+    vector_angles = compute_vector_angles_zy_pose_pair(
+        poses_from=np.stack(pose_series_from.values),
+        selected_keypoint_names_from=selected_keypoint_names_from,
+        poses_to=np.stack(pose_series_to.values),
+        selected_keypoint_names_to=selected_keypoint_names_to,
+        keypoint_names=keypoint_names,
+        include_beta=include_beta,
+    )
+    vector_angles_series = pd.Series(
+        list(vector_angles),
+        index=pose_series_from.index
+    )
+    return vector_angles_series
+
+def compute_vector_angles_zy_pose_pair(
+    poses_from,
+    selected_keypoint_names_from,
+    poses_to,
+    selected_keypoint_names_to,
+    keypoint_names,
+    include_beta=False,
+):
+    unit_vectors = compute_unit_vectors_pose_pair(
+        poses_from=poses_from,
+        selected_keypoint_names_from=selected_keypoint_names_from,
+        poses_to=poses_to,
+        selected_keypoint_names_to=selected_keypoint_names_to,
+        keypoint_names=keypoint_names,
+    )
+    phis = np.arccos(unit_vectors[:, 2])
+    alphas = np.arccos(unit_vectors[:, 1]/np.linalg.norm(unit_vectors[:, :2], axis=1))
+    if include_beta:
+        betas = np.sign(unit_vectors[:, 0])
+        vector_angles = np.stack(
+            (phis, alphas, betas),
+            axis=1
+        )
+    else:
+        vector_angles = np.stack(
+            (phis, alphas),
+            axis=1
+        )
+    return vector_angles
+
 def generate_vector_angles_zy_feature(
     pose_series,
     selected_keypoint_names_from,
