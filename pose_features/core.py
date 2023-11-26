@@ -163,6 +163,85 @@ def compute_poses_body_frame(
     )
     return poses_body_frame
 
+def generate_poses_body_frame_pose_pair_feature(
+    pose_series,
+    reference_pose_series,
+    pose_track_id_series,
+    reference_pose_track_id_series,
+    selected_keypoint_names,
+    keypoint_names,
+):
+    df = pd.concat(
+        [pose_series, reference_pose_series],
+        axis=1
+    )
+    poses_body_frame_series = (
+        df
+        .groupby([pose_track_id_series, reference_pose_track_id_series], group_keys=False)
+        .apply(lambda df_group: generate_poses_body_frame_pose_pair_feature_pose_track(
+            pose_series=df_group.iloc[:, 0],
+            reference_pose_series=df_group.iloc[:, 1],
+            selected_keypoint_names=selected_keypoint_names,
+            keypoint_names=keypoint_names,
+        ))
+    )
+    return poses_body_frame_series
+
+def generate_poses_body_frame_pose_pair_feature_pose_track(
+    pose_series,
+    reference_pose_series,
+    selected_keypoint_names,
+    keypoint_names,
+):
+    poses_body_frame = compute_poses_body_frame_pose_pair(
+        poses=np.stack(pose_series.values),
+        reference_poses=np.stack(reference_pose_series.values),
+        selected_keypoint_names=selected_keypoint_names,
+        keypoint_names=keypoint_names,        
+    )
+    poses_body_frame_series = pd.Series(
+        list(poses_body_frame),
+        index=pose_series.index
+    )
+    return poses_body_frame_series
+
+def compute_poses_body_frame_pose_pair(
+    poses,
+    reference_poses,
+    selected_keypoint_names,
+    keypoint_names,        
+):
+    if len(selected_keypoint_names) !=2:
+        raise ValueError('Two keypoints must be specified to compute poses in the body frame')
+    keypoints_xy = compute_keypoints_xy(
+        poses=reference_poses,
+        selected_keypoint_names=selected_keypoint_names,
+        keypoint_names=keypoint_names,    
+    )
+    pose_orientations_xy = compute_pose_orientations_xy(
+        poses=reference_poses,
+        selected_keypoint_names=selected_keypoint_names,
+        keypoint_names=keypoint_names,
+    )
+    poses_recentered = np.subtract(
+        poses,
+        np.expand_dims(
+            np.concatenate(
+                (
+                    keypoints_xy,
+                    np.zeros((keypoints_xy.shape[0], 1)),
+                ),
+                axis=1
+            ),
+            axis=1
+        )
+    )
+    poses_body_frame = apply_z_rotations(
+        poses=poses_recentered,
+        angles=-pose_orientations_xy
+    )
+    return poses_body_frame
+
 def apply_z_rotations(
     poses,
     angles,
