@@ -167,7 +167,6 @@ def generate_poses_body_frame_pose_pair_feature(
     pose_series,
     reference_pose_series,
     pose_track_id_series,
-    reference_pose_track_id_series,
     selected_keypoint_names,
     keypoint_names,
 ):
@@ -177,7 +176,7 @@ def generate_poses_body_frame_pose_pair_feature(
     )
     poses_body_frame_series = (
         df
-        .groupby([pose_track_id_series, reference_pose_track_id_series], group_keys=False)
+        .groupby(pose_track_id_series, group_keys=False)
         .apply(lambda df_group: generate_poses_body_frame_pose_pair_feature_pose_track(
             pose_series=df_group.iloc[:, 0],
             reference_pose_series=df_group.iloc[:, 1],
