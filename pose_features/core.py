@@ -48,6 +48,51 @@ def impute_keypoints_pose_track(
     )
     return pose_track_data_imputed
 
+def impute_keypoints_pose_pairs(
+    pose_data,
+    pose_track_id_column_names=['pose_track_3d_id_a', 'pose_track_3d_id_b'],
+    timestamp_column_name='timestamp',
+    keypoint_coordinates_3d_column_names=['keypoint_coordinates_3d_a', 'keypoint_coordinates_3d_b'],
+):
+    impute_keypoints_pose_pairs_pose_track_partial = functools.partial(
+        impute_keypoints_pose_pairs_pose_track,
+        timestamp_column_name=timestamp_column_name,
+        keypoint_coordinates_3d_column_names=keypoint_coordinates_3d_column_names,
+    )
+    pose_data_imputed = (
+        pose_data
+        .groupby(
+            pose_track_id_column_names,
+            as_index=False,
+            group_keys=False,
+        )
+        .apply(impute_keypoints_pose_pairs_pose_track_partial)
+    )
+    return pose_data_imputed
+
+def impute_keypoints_pose_pairs_pose_track(
+    pose_track_data,
+    timestamp_column_name='timestamp',
+    keypoint_coordinates_3d_column_names=['keypoint_coordinates_3d_a', 'keypoint_coordinates_3d_b'],
+):
+    num_poses = len(pose_track_data)
+    pose_track_data_imputed = (
+            pose_track_data
+            .copy()
+            .sort_values('timestamp')
+    )
+    for keypoint_coordinates_3d_column_name in keypoint_coordinates_3d_column_names:
+        keypoint_coordinates_flattened = pd.DataFrame(
+            np.stack(pose_track_data_imputed[keypoint_coordinates_3d_column_name]).reshape((num_poses, -1)),
+            index=pose_track_data_imputed[timestamp_column_name]
+        )
+        keypoint_coordinates_flattened_interpolated = keypoint_coordinates_flattened.interpolate(method='time')
+        pose_track_data_imputed[keypoint_coordinates_3d_column_name] = list(
+            np.stack(keypoint_coordinates_flattened_interpolated.values)
+            .reshape((num_poses, -1, 3))
+        )
+    return pose_track_data_imputed
+
 def remove_incomplete_poses(
     pose_data,
     keypoint_coordinates_3d_column_name='keypoint_coordinates_3d',
@@ -57,6 +102,19 @@ def remove_incomplete_poses(
         .loc[pose_data[keypoint_coordinates_3d_column_name].apply(lambda x: np.all(np.isfinite(x)))]
         .copy()
     )
+    return pose_data_cleaned
+
+def remove_incomplete_poses_pose_pairs(
+    pose_data,
+    keypoint_coordinates_3d_column_names=['keypoint_coordinates_3d_a', 'keypoint_coordinates_3d_b'],
+):
+    pose_data_cleaned = pose_data.copy()
+    for keypoint_coordinates_3d_column_name in keypoint_coordinates_3d_column_names:
+        pose_data_cleaned = (
+            pose_data_cleaned
+            .loc[pose_data_cleaned[keypoint_coordinates_3d_column_name].apply(lambda x: np.all(np.isfinite(x)))]
+            .copy()
+        )
     return pose_data_cleaned
 
 def generate_pose_pair_data(pose_data):
