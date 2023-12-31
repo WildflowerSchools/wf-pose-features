@@ -91,7 +91,10 @@ def generate_pose_pair_data(pose_data):
         )
         if len(pose_track_pair) > 0:
             pose_track_pairs.append(pose_track_pair)
-    pose_pair_data = pd.concat(pose_track_pairs)
+    if len(pose_track_pairs) > 0:
+        pose_pair_data = pd.concat(pose_track_pairs)
+    else:
+        pose_pair_data = pd.DataFrame()
     return pose_pair_data
 
 def generate_poses_body_frame_feature(
